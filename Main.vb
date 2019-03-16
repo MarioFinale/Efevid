@@ -1,6 +1,6 @@
 ﻿Imports MWBot.net
 Imports MWBot.net.WikiBot
-Imports MWBot.net.GlobalVars
+Imports Utils.Utils
 
 Module Main
 
@@ -24,7 +24,7 @@ Module Main
                             IO.File.WriteAllText(statuspath, My.Resources.status_OK)
                         End Try
                     Catch ex As Exception
-                        Utils.EventLogger.EX_Log(ex.Message, "Checker")
+                        EventLogger.EX_Log(ex.Message, "Checker")
                     End Try
                     Try
                         Threading.Thread.Sleep(3000)

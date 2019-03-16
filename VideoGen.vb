@@ -2,8 +2,7 @@
 Imports System.Drawing
 Imports System.Net
 Imports System.Text.RegularExpressions
-Imports MWBot.net
-Imports MWBot.net.GlobalVars
+Imports Utils.Utils
 Imports MWBot.net.WikiBot
 
 Public Class VideoGen
@@ -22,22 +21,22 @@ Public Class VideoGen
     Function Allefe() As Boolean
         Dim results As New List(Of Boolean)
         For i As Integer = 0 To 6
-            Utils.BotSettings.NewVal("efecheck", False.ToString)
-            Utils.BotSettings.NewVal("efe", "")
+            SettingsProvider.NewVal("efecheck", False.ToString)
+            SettingsProvider.NewVal("efe", "")
             Dim tdate As Date = Date.UtcNow.AddDays(i)
             Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
-            Utils.EventLogger.Log("Generar efemérides " & tdatestring, "GenEfemerides")
+            EventLogger.Log("Generar efemérides " & tdatestring, "GenEfemerides")
             Dim tef As WikiBotEphe = GetEfeInfo(tdate)
             If Not tef.Revised Then
-                Utils.BotSettings.Set("efecheck", False.ToString)
-                Utils.EventLogger.Log("Efemérides no revisadas", "GenEfemerides")
+                SettingsProvider.Set("efecheck", False.ToString)
+                EventLogger.Log("Efemérides no revisadas", "GenEfemerides")
                 Dim efeinfopath As String = Hfolder & tdatestring & ".htm"
                 IO.File.WriteAllText(efeinfopath, "Efemérides no revisadas.")
                 results.Add(False)
                 Continue For
             End If
             results.Add(GenEfemerides(tdate))
-            Utils.BotSettings.Set("efecheck", True.ToString)
+            SettingsProvider.Set("efecheck", True.ToString)
         Next
 
         Dim tresult As Boolean = True
@@ -123,7 +122,7 @@ Public Class VideoGen
                 efeinfotext = efeinfotext & "Muerte de "
             End If
             efeinfotext = efeinfotext & ef.Page & ": "
-            efeinfotext = efeinfotext & "http://es.wikipedia.org/wiki/" & Utils.UrlWebEncode(ef.Page.Replace(" "c, "_"c))
+            efeinfotext = efeinfotext & "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
         Next
         efeinfotext = efeinfotext & Environment.NewLine & IO.File.ReadAllText(MusicDescFile, System.Text.Encoding.UTF8)
         efeinfotext = efeinfotext & btext
@@ -136,11 +135,11 @@ Public Class VideoGen
         Dim Generated As Boolean = True
         Createhfiles(tdate)
         If Not CheckResources() Then
-            Utils.EventLogger.Log("Faltan recursos en /Res", "GenEfemerides")
+            EventLogger.Log("Faltan recursos en /Res", "GenEfemerides")
             Return False
         End If
 
-        Utils.EventLogger.Log("Generando imágenes para las efemérides", "GenEfemerides")
+        EventLogger.Log("Generando imágenes para las efemérides", "GenEfemerides")
         Dim Tpath As String = Exepath & "Images" & DirSeparator
         Dim imagename As String = "efe"
         Dim current As Integer = Createintro(imagename, Tpath, tdate)
@@ -151,35 +150,35 @@ Public Class VideoGen
         current = Blackout(current, imagename, Tpath)
 
 
-        Utils.EventLogger.Log(current.ToString & " Imágenes generadas.", "GenEfemerides")
+        EventLogger.Log(current.ToString & " Imágenes generadas.", "GenEfemerides")
 
         If Not EncodeVideo(Tpath, tdate) Then
-            Utils.EventLogger.EX_Log("No se ha generado video", "GenEfemerides")
+            EventLogger.EX_Log("No se ha generado video", "GenEfemerides")
             Generated = False
         End If
 
-        Utils.EventLogger.Log("Limpiando imágenes temporales", "GenEfemerides")
+        EventLogger.Log("Limpiando imágenes temporales", "GenEfemerides")
         For Each f As String In IO.Directory.GetFiles(Tpath)
             Try
                 IO.File.Delete(f)
             Catch ex As IO.IOException
-                Utils.EventLogger.EX_Log("Error al eliminar el archivo """ & f & """", "GenEfemerides")
+                EventLogger.EX_Log("Error al eliminar el archivo """ & f & """", "GenEfemerides")
             End Try
         Next
-        Utils.EventLogger.Log("Proceso completo", "GenEfemerides")
-        Utils.BotSettings.Set("efe", tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00"))
+        EventLogger.Log("Proceso completo", "GenEfemerides")
+        SettingsProvider.Set("efe", tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00"))
         Return Generated
     End Function
 
 
     Function EncodeVideo(ByVal tpath As String, tdate As Date) As Boolean
-        Utils.EventLogger.Log("Generando video", "EncodeVideo")
+        EventLogger.Log("Generando video", "EncodeVideo")
         Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
         Dim MusicFile As String = Hfolder & tdatestring & ".mp3"
         Try
             If OS.ToLower.Contains("windows") Then
-                Utils.EventLogger.Log("Plataforma: Windows", "EncodeVideo")
-                Utils.EventLogger.Log("Llamando a ffmpeg", "EncodeVideo")
+                EventLogger.Log("Plataforma: Windows", "EncodeVideo")
+                EventLogger.Log("Llamando a ffmpeg", "EncodeVideo")
                 Using exec As New Process
                     exec.StartInfo.FileName = "ffmpeg"
                     exec.StartInfo.UseShellExecute = True
@@ -194,8 +193,8 @@ Public Class VideoGen
                 End Using
             Else
                 'Assume linux
-                Utils.EventLogger.Log("Plataforma: Linux", "EncodeVideo")
-                Utils.EventLogger.Log("Llamando a avconv", "EncodeVideo")
+                EventLogger.Log("Plataforma: Linux", "EncodeVideo")
+                EventLogger.Log("Llamando a avconv", "EncodeVideo")
                 Using exec As New Process
                     exec.StartInfo.FileName = "avconv"
                     exec.StartInfo.UseShellExecute = True
@@ -209,7 +208,7 @@ Public Class VideoGen
                 End Using
             End If
         Catch ex As SystemException
-            Utils.EventLogger.EX_Log("EX Encoding: " & ex.Message, "EncodeVideo")
+            EventLogger.EX_Log("EX Encoding: " & ex.Message, "EncodeVideo")
             Return False
         End Try
         Return True
@@ -230,22 +229,22 @@ Public Class VideoGen
 
     Function Createintro(ByVal imagename As String, path As String, tdate As Date) As Integer
         Dim current As Integer = 0
-        Using Efeimg As Image = Image.FromFile(Exepath & "Res" & DirSeparator & "efetxt.png")
-            Dim wikiimg As Image = Image.FromFile(Exepath & "Res" & DirSeparator & "wlogo.png")
+        Using Efeimg As Drawing.Image = Drawing.Image.FromFile(Exepath & "Res" & DirSeparator & "efetxt.png")
+            Dim wikiimg As Drawing.Image = Drawing.Image.FromFile(Exepath & "Res" & DirSeparator & "wlogo.png")
             wikiimg = New Bitmap(wikiimg, New Size(CInt(wikiimg.Width / 3), CInt(wikiimg.Height / 3)))
-            Using Bgimg As Image = New Bitmap(700, 720)
+            Using Bgimg As Drawing.Image = New Bitmap(700, 720)
                 Using tdrawing As Graphics = Graphics.FromImage(Bgimg)
                     tdrawing.Clear(Color.White)
                     tdrawing.Save()
                     Dim Fecha As String = tdate.ToString("d 'de' MMMM", New Globalization.CultureInfo("es-ES"))
-                    Using fechaimg As Image = DrawText(Fecha, New Font(FontFamily.GenericSansSerif, 35.0!, FontStyle.Regular), Color.Black, True)
+                    Using fechaimg As Drawing.Image = DrawText(Fecha, New Font(FontFamily.GenericSansSerif, 35.0!, FontStyle.Regular), Color.Black, True)
                         current = DragRightToLeft(Bgimg, Efeimg, New Point(0, 0), 0.2F, imagename, path, 0)
-                        Dim lastimg As Image = Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
+                        Dim lastimg As Drawing.Image = Drawing.Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
                         current = DragRightToLeft(lastimg, fechaimg, New Point(lastimg.Width - fechaimg.Width, 0), 0.08F, imagename, path, current)
                         lastimg = Drawing.Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
-                        Using timage As Image = PasteImage(lastimg, wikiimg, New Point(CInt((lastimg.Width - wikiimg.Width) / 2), 150))
+                        Using timage As Drawing.Image = PasteImage(lastimg, wikiimg, New Point(CInt((lastimg.Width - wikiimg.Width) / 2), 150))
                             current = PasteFadeIn(lastimg, timage, New Point(0, 0), imagename, path, current)
-                            lastimg = Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
+                            lastimg = Drawing.Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
                             current = Repeatimage(path, imagename, current, lastimg, 60)
                         End Using
                         lastimg.Dispose()
@@ -260,12 +259,12 @@ Public Class VideoGen
 
     Function Blackout(ByVal current As Integer, imagename As String, path As String) As Integer
         Dim lastimg As Drawing.Image = Drawing.Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
-        Dim outimg As Image = New Bitmap(700, 720)
-        Using timg As Image = New Bitmap(700, 720)
+        Dim outimg As Drawing.Image = New Bitmap(700, 720)
+        Using timg As Drawing.Image = New Bitmap(700, 720)
             Using gr As Graphics = Graphics.FromImage(timg)
                 gr.Clear(Color.Black)
                 gr.Save()
-                outimg = CType(timg.Clone, Image)
+                outimg = CType(timg.Clone, Drawing.Image)
             End Using
         End Using
         current = PasteFadeIn(lastimg, outimg, New Point(0, 0), imagename, path, current)
@@ -376,11 +375,11 @@ Public Class VideoGen
             Dim año As Integer = ef.Year
             Dim Description As String = ef.Description
             Dim Commonsimg As String = "File:" & ef.Image
-            Dim commonsimgdata As Tuple(Of Image, String()) = GetCommonsFile(Commonsimg)
+            Dim commonsimgdata As Tuple(Of Drawing.Image, String()) = GetCommonsFile(Commonsimg)
             Dim licence As String = commonsimgdata.Item2(0)
             Dim licenceurl As String = commonsimgdata.Item2(1)
             Dim author As String = commonsimgdata.Item2(2)
-            Using cimage As Image = commonsimgdata.Item1
+            Using cimage As Drawing.Image = commonsimgdata.Item1
                 current = Createimages(path, imagename, current, ef.Image, cimage, licence, licenceurl, author, año, Description, ef.TextSize)
             End Using
             c += 6
@@ -388,10 +387,10 @@ Public Class VideoGen
         Return current
     End Function
 
-    Function Createimages(ByVal Path As String, imagename As String, current As Integer, efimgname As String, efimg As Image, licencename As String, licenceurl As String, artist As String, year As Integer, description As String, textsize As Double) As Integer
+    Function Createimages(ByVal Path As String, imagename As String, current As Integer, efimgname As String, efimg As Drawing.Image, licencename As String, licenceurl As String, artist As String, year As Integer, description As String, textsize As Double) As Integer
         If licencename.ToLower = "public domain" Then licencename = "En dominio público"
         If Not String.IsNullOrWhiteSpace(licenceurl) Then licencename = licencename & " (" & licenceurl & ")"
-        Dim CommonsName As String = "Imagen en Wikimedia Commons: " & Utils.NormalizeUnicodetext(efimgname)
+        Dim CommonsName As String = "Imagen en Wikimedia Commons: " & NormalizeUnicodetext(efimgname)
         Dim detailstext As String = CommonsName & Environment.NewLine & "Autor: " & artist & Environment.NewLine & "Licencia: " & licencename
         Dim yeardiff As Integer = Date.Now.Year - year
         Dim syeardiff As String = "Hace " & yeardiff.ToString & " años"
@@ -399,7 +398,7 @@ Public Class VideoGen
 
         efimg = New Bitmap(efimg, New Size(700, CInt(720 / hratio)))
         If efimg.Height < 720 Then
-            Using timg As Image = New Bitmap(700, 720)
+            Using timg As Drawing.Image = New Bitmap(700, 720)
                 Using gr As Graphics = Graphics.FromImage(timg)
                     gr.Clear(Color.White)
                     gr.Save()
@@ -413,20 +412,20 @@ Public Class VideoGen
         current = PasteFadeIn(lastimg, efimg, New Point(0, 0), imagename, Path, current)
         lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
 
-        Using yrimg As Image = DrawText2(year.ToString, New Font(FontFamily.GenericSansSerif, 70.0!, FontStyle.Regular), Color.Black, Color.White, True)
+        Using yrimg As Drawing.Image = DrawText2(year.ToString, New Font(FontFamily.GenericSansSerif, 70.0!, FontStyle.Regular), Color.Black, Color.White, True)
 
             Using añoimg As Drawing.Image = PasteImage(lastimg, yrimg, New Point(0, 0))
                 current = PasteFadeIn(lastimg, añoimg, New Point(0, 0), imagename, Path, current)
                 lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
             End Using
 
-            Using dimg As Image = DrawText2(syeardiff, New Font(FontFamily.GenericSansSerif, 30.0!, FontStyle.Regular), Color.Black, Color.White, True)
-                Using Diffimg As Image = PasteImage(lastimg, dimg, New Point(0, 90))
+            Using dimg As Drawing.Image = DrawText2(syeardiff, New Font(FontFamily.GenericSansSerif, 30.0!, FontStyle.Regular), Color.Black, Color.White, True)
+                Using Diffimg As Drawing.Image = PasteImage(lastimg, dimg, New Point(0, 90))
                     current = PasteFadeIn(lastimg, Diffimg, New Point(0, 0), imagename, Path, current)
                 End Using
-                Using bgt As Image = Image.FromFile(Exepath & "Res" & DirSeparator & "tbg.png")
+                Using bgt As Drawing.Image = Drawing.Image.FromFile(Exepath & "Res" & DirSeparator & "tbg.png")
                     lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
-                    Dim defbgt As Image = PasteImage(bgt, yrimg, New Point(0, 0))
+                    Dim defbgt As Drawing.Image = PasteImage(bgt, yrimg, New Point(0, 0))
                     defbgt = PasteImage(defbgt, dimg, New Point(0, 90))
                     current = PasteFadeIn(lastimg, defbgt, New Point(0, 0), imagename, Path, current)
                     defbgt.Dispose()
@@ -436,25 +435,25 @@ Public Class VideoGen
         End Using
 
         Using descimg As Drawing.Image = DrawText(description, New Font(FontFamily.GenericSansSerif, Convert.ToSingle(3.0! * textsize), FontStyle.Regular), Color.White, True)
-            Using timage As Image = PasteImage(lastimg, descimg, New Point(CInt((lastimg.Width - descimg.Width) / 2), 350))
+            Using timage As Drawing.Image = PasteImage(lastimg, descimg, New Point(CInt((lastimg.Width - descimg.Width) / 2), 350))
                 current = PasteFadeIn(lastimg, timage, New Point(0, 0), imagename, Path, current)
                 lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
             End Using
         End Using
 
-        Using bmargin As Image = Image.FromFile(Exepath & "Res" & DirSeparator & "bmargin.png")
-            Dim bimg As Image = PasteImage(lastimg, bmargin, New Point(0, 642))
+        Using bmargin As Drawing.Image = Drawing.Image.FromFile(Exepath & "Res" & DirSeparator & "bmargin.png")
+            Dim bimg As Drawing.Image = PasteImage(lastimg, bmargin, New Point(0, 642))
             current = PasteFadeIn(lastimg, bimg, New Point(0, 0), imagename, Path, current)
             lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
         End Using
 
-        Using detailsimg As Image = DrawText(detailstext, New Font(FontFamily.GenericMonospace, 10.0!, FontStyle.Regular), Color.LightGray, False)
+        Using detailsimg As Drawing.Image = DrawText(detailstext, New Font(FontFamily.GenericMonospace, 10.0!, FontStyle.Regular), Color.LightGray, False)
             current = DragRightToLeft(lastimg, detailsimg, New Point(0, 650), 0.6F, imagename, Path, current)
             lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
             current = Repeatimage(Path, imagename, current, lastimg, 120)
         End Using
 
-        Using transimg As Image = New Bitmap(700, 720)
+        Using transimg As Drawing.Image = New Bitmap(700, 720)
             Using g As Graphics = Graphics.FromImage(transimg)
                 g.Clear(Color.White)
                 g.Save()
@@ -476,7 +475,7 @@ Public Class VideoGen
         Dim description As String = IO.File.ReadAllText(MusicDescFile, System.Text.Encoding.UTF8)
 
         Using descimg As Drawing.Image = DrawText(description, New Font(FontFamily.GenericSansSerif, Convert.ToSingle(3.0! * 4.5), FontStyle.Regular), Color.White, True)
-            Using timage As Image = PasteImage(lastimg, descimg, New Point(CInt((lastimg.Width - descimg.Width) / 2), 250))
+            Using timage As Drawing.Image = PasteImage(lastimg, descimg, New Point(CInt((lastimg.Width - descimg.Width) / 2), 250))
                 current = PasteFadeIn(lastimg, timage, New Point(0, 0), imagename, path, current)
                 current = Repeatimage(path, imagename, current, timage, 90)
             End Using
@@ -485,10 +484,10 @@ Public Class VideoGen
     End Function
 
 
-    Public Function Repeatimage(ByVal Path As String, imagename As String, current As Integer, efimg As Image, repetitions As Integer) As Integer
+    Public Function Repeatimage(ByVal Path As String, imagename As String, current As Integer, efimg As Drawing.Image, repetitions As Integer) As Integer
         For i = 0 To repetitions
             current += 1
-            Using timg As Image = CType(efimg.Clone, Image)
+            Using timg As Drawing.Image = CType(efimg.Clone, Drawing.Image)
                 timg.Save(Path & imagename & current.ToString("0000") & ".jpg", Imaging.ImageFormat.Jpeg)
             End Using
         Next
@@ -498,27 +497,27 @@ Public Class VideoGen
     Public Function DragRightToLeft(ByVal Bgimg As Drawing.Image, ByVal fimg As Drawing.Image, imgpos As Point, ByVal speed As Double, Imagename As String, Imagepath As String, Startingindex As Integer) As Integer
         Dim last As Integer = Startingindex
         Dim imglist As New List(Of Drawing.Image)
-        Using bgim As Drawing.Image = CType(Bgimg.Clone, Image)
-            Using fim As Drawing.Image = CType(fimg.Clone, Image)
+        Using bgim As Drawing.Image = CType(Bgimg.Clone, Drawing.Image)
+            Using fim As Drawing.Image = CType(fimg.Clone, Drawing.Image)
                 Dim twidth As Integer = bgim.Width
                 For i As Integer = twidth To imgpos.X Step -1
-                    Using tfimg As Drawing.Image = CType(fim.Clone, Image)
-                        Using tBgimg As Drawing.Image = CType(bgim.Clone, Image)
+                    Using tfimg As Drawing.Image = CType(fim.Clone, Drawing.Image)
+                        Using tBgimg As Drawing.Image = CType(bgim.Clone, Drawing.Image)
                             Dim tpos As Integer = CInt(twidth * (Math.E ^ (-(twidth - i) * speed)))
                             If (tpos < (imgpos.X + 5)) Then
                                 Using nimg As Drawing.Image = PasteImage(tBgimg, tfimg, New Point(imgpos.X, imgpos.Y))
-                                    imglist.Add(CType(nimg.Clone, Image))
+                                    imglist.Add(CType(nimg.Clone, Drawing.Image))
                                 End Using
                                 Exit For
                             End If
                             Using nimg As Drawing.Image = PasteImage(tBgimg, tfimg, New Point(tpos, imgpos.Y))
-                                imglist.Add(CType(nimg.Clone, Image))
+                                imglist.Add(CType(nimg.Clone, Drawing.Image))
                             End Using
                         End Using
                     End Using
                 Next
                 For i As Integer = 0 To imglist.Count - 1
-                    Using timg As Drawing.Image = CType(imglist(i).Clone, Image)
+                    Using timg As Drawing.Image = CType(imglist(i).Clone, Drawing.Image)
                         timg.Save(Imagepath.ToString & DirSeparator & Imagename & (last + i + 1).ToString("0000") & ".jpg", Imaging.ImageFormat.Jpeg)
                     End Using
                 Next
@@ -544,8 +543,8 @@ Public Class VideoGen
 
     Public Function PasteFadeIn(ByVal Bgimg As Drawing.Image, ByVal fimg As Drawing.Image, imgpos As Point, Imagename As String, Imagepath As String, Startingindex As Integer) As Integer
         Dim Counter As Integer = Startingindex
-        Using nimg As Image = PasteImage(CType(Bgimg.Clone, Image), CType(fimg.Clone, Image), imgpos)
-            Counter = Fadein(Imagepath, Imagename, Startingindex, CType(Bgimg.Clone, Image), CType(nimg.Clone, Image))
+        Using nimg As Drawing.Image = PasteImage(CType(Bgimg.Clone, Drawing.Image), CType(fimg.Clone, Drawing.Image), imgpos)
+            Counter = Fadein(Imagepath, Imagename, Startingindex, CType(Bgimg.Clone, Drawing.Image), CType(nimg.Clone, Drawing.Image))
         End Using
         Return Counter
     End Function
@@ -556,7 +555,7 @@ Public Class VideoGen
     ''' <param name="Bgimg"></param>
     ''' <param name="image"></param>
     ''' <returns></returns>
-    Public Function Fadein(ByVal Path As String, imagename As String, current As Integer, ByVal Bgimg As Image, ByVal image As Drawing.Image) As Integer
+    Public Function Fadein(ByVal Path As String, imagename As String, current As Integer, ByVal Bgimg As Drawing.Image, ByVal image As Drawing.Image) As Integer
         Using orig As Bitmap = CType(image.Clone, Bitmap)
             Using bg As Bitmap = CType(Bgimg.Clone, Bitmap)
                 For b As Integer = 0 To 30
@@ -591,7 +590,7 @@ Public Class VideoGen
 
     Public Function DrawText2(ByVal text As String, ByVal font As Font, ByVal textcolor As Color, ByVal backcolor As Color, ByVal center As Boolean) As Drawing.Image
         text = text.Replace("'''", "") 'Por ahora ignoremos las negritas
-        Dim Lines As String() = Utils.GetLines(text)
+        Dim Lines As String() = GetLines(text)
         Dim images As New List(Of Drawing.Image)
         For Each line As String In Lines
             images.Add(DrawSpecialText(line, font, textcolor, backcolor))
@@ -621,10 +620,10 @@ Public Class VideoGen
     End Function
 
 
-    Public Function DrawSpecialText(ByVal text As String, ByVal font As Font, ByVal textColor As Color, ByVal backColor As Color) As Image
+    Public Function DrawSpecialText(ByVal text As String, ByVal font As Font, ByVal textColor As Color, ByVal backColor As Color) As Drawing.Image
         text = text.Replace("'''", "")
         text = text.Replace(Environment.NewLine, "").Replace(vbLf, "").Replace(vbCr, "").Replace(vbCrLf, "")
-        Dim img As Image = New Bitmap(1, 1)
+        Dim img As Drawing.Image = New Bitmap(1, 1)
         Dim drawing As Graphics = Graphics.FromImage(img)
         If String.IsNullOrEmpty(text) Then Return img
 
@@ -648,7 +647,7 @@ Public Class VideoGen
     End Function
 
     Public Function DrawText(ByVal text As String, ByVal font As Font, ByVal textColor As Color, ByVal center As Boolean) As Drawing.Image
-        Dim Lines As String() = Utils.GetLines(text)
+        Dim Lines As String() = GetLines(text)
         Dim images As New List(Of Drawing.Image)
 
         For Each line As String In Lines
@@ -668,7 +667,7 @@ Public Class VideoGen
         timg = New Bitmap(totalwidth, totalheight)
 
         Dim lastheight As Integer = 0
-        For Each limage As Image In images
+        For Each limage As Drawing.Image In images
             If center Then
                 If limage.Width < timg.Width Then
                     timg = PasteImage(timg, limage, New Point(CInt((timg.Width - limage.Width) / 2), lastheight))
@@ -713,12 +712,12 @@ Public Class VideoGen
         Return img
     End Function
 
-    Function GetCommonsFile(ByVal CommonsFilename As String) As Tuple(Of Image, String())
-        Dim responsestring As String = Utils.NormalizeUnicodetext(Bot.GETQUERY("action=query&format=json&titles=" & Utils.UrlWebEncode(CommonsFilename) & "&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=500"))
-        Dim thumburlmatches As String() = Utils.TextInBetween(responsestring, """thumburl"":""", """,")
-        Dim licencematches As String() = Utils.TextInBetween(responsestring, """LicenseShortName"":{""value"":""", """,")
-        Dim licenceurlmatches As String() = Utils.TextInBetween(responsestring, """LicenseUrl"":{""value"":""", """,")
-        Dim authormatches As String() = Utils.TextInBetween(responsestring, """Artist"":{""value"":""", """,")
+    Function GetCommonsFile(ByVal CommonsFilename As String) As Tuple(Of Drawing.Image, String())
+        Dim responsestring As String = NormalizeUnicodetext(Bot.GETQUERY("action=query&format=json&titles=" & UrlWebEncode(CommonsFilename) & "&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=500"))
+        Dim thumburlmatches As String() = TextInBetween(responsestring, """thumburl"":""", """,")
+        Dim licencematches As String() = TextInBetween(responsestring, """LicenseShortName"":{""value"":""", """,")
+        Dim licenceurlmatches As String() = TextInBetween(responsestring, """LicenseUrl"":{""value"":""", """,")
+        Dim authormatches As String() = TextInBetween(responsestring, """Artist"":{""value"":""", """,")
         Dim matchstring As String = "<[\S\s]+?>"
         Dim matchstring2 As String = "\([\S\s]+?\)"
 
@@ -747,23 +746,23 @@ Public Class VideoGen
                 author = author.Split(":"c)(1).Trim
             End If
         End If
-        Dim img As Image = New Bitmap(1, 1)
+        Dim img As Drawing.Image = New Bitmap(1, 1)
         If thumburlmatches.Count > 0 Then
             img = PicFromUrl(thumburlmatches(0))
         End If
         If String.IsNullOrWhiteSpace(author) Or (author.ToLower.Contains("unknown")) Then
             author = "Desconocido"
         End If
-        Return New Tuple(Of Image, String())(img, {licence, licenceurl, author})
+        Return New Tuple(Of Drawing.Image, String())(img, {licence, licenceurl, author})
     End Function
 
-    Function PicFromUrl(ByVal url As String) As Image
-        Dim img As Image = New Bitmap(1, 1)
+    Function PicFromUrl(ByVal url As String) As Drawing.Image
+        Dim img As Drawing.Image = New Bitmap(1, 1)
         Try
             Dim request = WebRequest.Create(url)
             Using response = request.GetResponse()
                 Using stream = response.GetResponseStream()
-                    img = CType(Image.FromStream(stream).Clone, Image)
+                    img = CType(Drawing.Image.FromStream(stream).Clone, Drawing.Image)
                 End Using
             End Using
             Return img
