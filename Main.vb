@@ -1,47 +1,40 @@
 ﻿Imports MWBot.net
 Imports MWBot.net.WikiBot
-Imports MWBot.net.GlobalVars
+Imports Utils.Utils
 
 Module Main
-
+    Public ReadOnly Header As String = Exepath & "Res" & DirSeparator & "header.hres"
+    Public ReadOnly Bottom As String = Exepath & "Res" & DirSeparator & "bottom.hres"
+    Public ReadOnly Hfolder As String = Exepath & "hfiles" & DirSeparator
+    Public ReadOnly ImgFolder As String = Exepath & "Images" & DirSeparator
+    Public ReadOnly Reqfolder As String = Exepath & "req" & DirSeparator
 
     Sub Main()
         Do While True
-            For Each f As String In IO.Directory.GetFiles(Exepath)
-                Dim ext As String() = f.Split("."c)
-                If ext(ext.Count - 1) = "runme" Then
+            If Not IO.Directory.Exists(Reqfolder) Then
+                IO.Directory.CreateDirectory(Reqfolder)
+            End If
+
+            If IO.File.Exists(Reqfolder & "efevid.runme") Then
+                IO.File.Delete(Reqfolder & "efevid.runme")
+                Try
+                    Log_Filepath = Exepath & "VidLog.psv"
                     Try
-                        Log_Filepath = Exepath & "VidLog.psv"
-                        Dim statuspath As String = Exepath & "hfiles" & DirSeparator & "status.htm"
-                        Try
-                            Dim ESWikiBOT As Bot = New Bot(New ConfigFile(ConfigFilePath))
-                            IO.File.WriteAllText(statuspath, My.Resources.status_loading)
-                            Dim igen As New VideoGen(ESWikiBOT)
-                            IO.File.WriteAllText(statuspath, My.Resources.status_gen)
-                            igen.CheckEfe()
-                            IO.File.WriteAllText(statuspath, My.Resources.status_OK)
-                        Catch ex As Exception
-                            IO.File.WriteAllText(statuspath, My.Resources.status_OK)
-                        End Try
-                    Catch ex As Exception
-                        Utils.EventLogger.EX_Log(ex.Message, "Checker")
-                    End Try
-                    Try
-                        Threading.Thread.Sleep(3000)
-                        IO.File.Delete(f)
-                        IO.File.Delete(Log_Filepath)
-                        IO.File.Create(Log_Filepath).Close()
+                        Dim ESWikiBOT As Bot = New Bot(New ConfigFile(ConfigFilePath), Log_Filepath)
+                        Dim igen As New VideoGen(ESWikiBOT)
+                        igen.CheckEfe()
                     Catch ex As Exception
                     End Try
-                    Exit For
-                End If
-            Next
-            System.Threading.Thread.Sleep(500)
+                    Threading.Thread.Sleep(6000)
+                    If IO.File.Exists(Exepath & "VidLog.psv") Then
+                        IO.File.Delete(Exepath & "VidLog.psv")
+                        IO.File.Create(Exepath & "VidLog.psv").Close()
+                    End If
+                Catch ex As Exception
+                    EventLogger.EX_Log(ex.Message, "Checker")
+                End Try
+            End If
+            Threading.Thread.Sleep(3000)
         Loop
-
     End Sub
-
-
-
-
 End Module

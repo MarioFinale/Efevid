@@ -2,42 +2,36 @@
 Imports System.Drawing
 Imports System.Net
 Imports System.Text.RegularExpressions
-Imports MWBot.net
-Imports MWBot.net.GlobalVars
+Imports Utils.Utils
 Imports MWBot.net.WikiBot
+Imports Image = System.Drawing.Image
 
 Public Class VideoGen
     Property Bot As Bot
-    Private Header As String = Exepath & "Res" & DirSeparator & "header.hres"
-    Private Bottom As String = Exepath & "Res" & DirSeparator & "bottom.hres"
-    Private Hfolder As String = Exepath & "hfiles" & DirSeparator
-    Private ImgFolder As String = Exepath & "Images" & DirSeparator
-
 
     Sub New(ByRef workingbot As Bot)
         Bot = workingbot
     End Sub
 
-
     Function Allefe() As Boolean
         Dim results As New List(Of Boolean)
         For i As Integer = 0 To 6
-            Utils.BotSettings.NewVal("efecheck", False.ToString)
-            Utils.BotSettings.NewVal("efe", "")
+            SettingsProvider.NewVal("efecheck", False.ToString)
+            SettingsProvider.NewVal("efe", "")
             Dim tdate As Date = Date.UtcNow.AddDays(i)
             Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
-            Utils.EventLogger.Log("Generar efemérides " & tdatestring, "GenEfemerides")
+            EventLogger.Log("Generar efemérides " & tdatestring, "GenEfemerides")
             Dim tef As WikiBotEphe = GetEfeInfo(tdate)
             If Not tef.Revised Then
-                Utils.BotSettings.Set("efecheck", False.ToString)
-                Utils.EventLogger.Log("Efemérides no revisadas", "GenEfemerides")
+                SettingsProvider.Set("efecheck", False.ToString)
+                EventLogger.Log("Efemérides no revisadas", "GenEfemerides")
                 Dim efeinfopath As String = Hfolder & tdatestring & ".htm"
                 IO.File.WriteAllText(efeinfopath, "Efemérides no revisadas.")
                 results.Add(False)
                 Continue For
             End If
             results.Add(GenEfemerides(tdate))
-            Utils.BotSettings.Set("efecheck", True.ToString)
+            SettingsProvider.Set("efecheck", True.ToString)
         Next
 
         Dim tresult As Boolean = True
@@ -47,10 +41,7 @@ Public Class VideoGen
         Return tresult
     End Function
 
-
     Function CheckEfe() As Boolean
-
-
         Dim tdate As Date = Date.Now.AddDays(-2)
         Dim yfile1 As String = Exepath & "hfiles" & DirSeparator & tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00") & ".htm"
         Dim yfile2 As String = Exepath & "hfiles" & DirSeparator & tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00") & ".mp4"
@@ -90,8 +81,6 @@ Public Class VideoGen
             IO.Directory.CreateDirectory(Exepath & "hfiles")
         End If
 
-
-
         If Not IO.File.Exists(Header) Then
             IO.File.Create(Header).Close()
         End If
@@ -110,7 +99,6 @@ Public Class VideoGen
         Dim htext As String = IO.File.ReadAllText(Header)
         Dim btext As String = IO.File.ReadAllText(Bottom)
 
-
         Dim efeinfotext As String = htext & "Efemérides del " & Fecha & " en Wikipedia, la enciclopedia libre."
         efeinfotext = efeinfotext & Environment.NewLine & Environment.NewLine & "Enlaces:"
         Dim efes As WikiBotEphe = GetEfeInfo(tdate)
@@ -123,7 +111,7 @@ Public Class VideoGen
                 efeinfotext = efeinfotext & "Muerte de "
             End If
             efeinfotext = efeinfotext & ef.Page & ": "
-            efeinfotext = efeinfotext & "http://es.wikipedia.org/wiki/" & Utils.UrlWebEncode(ef.Page.Replace(" "c, "_"c))
+            efeinfotext = efeinfotext & "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
         Next
         efeinfotext = efeinfotext & Environment.NewLine & IO.File.ReadAllText(MusicDescFile, System.Text.Encoding.UTF8)
         efeinfotext = efeinfotext & btext
@@ -131,16 +119,15 @@ Public Class VideoGen
         Return True
     End Function
 
-
     Function GenEfemerides(ByVal tdate As Date) As Boolean
         Dim Generated As Boolean = True
         Createhfiles(tdate)
         If Not CheckResources() Then
-            Utils.EventLogger.Log("Faltan recursos en /Res", "GenEfemerides")
+            EventLogger.Log("Faltan recursos en /Res", "GenEfemerides")
             Return False
         End If
 
-        Utils.EventLogger.Log("Generando imágenes para las efemérides", "GenEfemerides")
+        EventLogger.Log("Generando imágenes para las efemérides", "GenEfemerides")
         Dim Tpath As String = Exepath & "Images" & DirSeparator
         Dim imagename As String = "efe"
         Dim current As Integer = Createintro(imagename, Tpath, tdate)
@@ -150,36 +137,34 @@ Public Class VideoGen
         current = MusicInfo(current, imagename, Tpath, tdate)
         current = Blackout(current, imagename, Tpath)
 
-
-        Utils.EventLogger.Log(current.ToString & " Imágenes generadas.", "GenEfemerides")
+        EventLogger.Log(current.ToString & " Imágenes generadas.", "GenEfemerides")
 
         If Not EncodeVideo(Tpath, tdate) Then
-            Utils.EventLogger.EX_Log("No se ha generado video", "GenEfemerides")
+            EventLogger.EX_Log("No se ha generado video", "GenEfemerides")
             Generated = False
         End If
 
-        Utils.EventLogger.Log("Limpiando imágenes temporales", "GenEfemerides")
+        EventLogger.Log("Limpiando imágenes temporales", "GenEfemerides")
         For Each f As String In IO.Directory.GetFiles(Tpath)
             Try
                 IO.File.Delete(f)
             Catch ex As IO.IOException
-                Utils.EventLogger.EX_Log("Error al eliminar el archivo """ & f & """", "GenEfemerides")
+                EventLogger.EX_Log("Error al eliminar el archivo """ & f & """", "GenEfemerides")
             End Try
         Next
-        Utils.EventLogger.Log("Proceso completo", "GenEfemerides")
-        Utils.BotSettings.Set("efe", tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00"))
+        EventLogger.Log("Proceso completo", "GenEfemerides")
+        SettingsProvider.Set("efe", tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00"))
         Return Generated
     End Function
 
-
     Function EncodeVideo(ByVal tpath As String, tdate As Date) As Boolean
-        Utils.EventLogger.Log("Generando video", "EncodeVideo")
+        EventLogger.Log("Generando video", "EncodeVideo")
         Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
         Dim MusicFile As String = Hfolder & tdatestring & ".mp3"
         Try
             If OS.ToLower.Contains("windows") Then
-                Utils.EventLogger.Log("Plataforma: Windows", "EncodeVideo")
-                Utils.EventLogger.Log("Llamando a ffmpeg", "EncodeVideo")
+                EventLogger.Log("Plataforma: Windows", "EncodeVideo")
+                EventLogger.Log("Llamando a ffmpeg", "EncodeVideo")
                 Using exec As New Process
                     exec.StartInfo.FileName = "ffmpeg"
                     exec.StartInfo.UseShellExecute = True
@@ -194,8 +179,8 @@ Public Class VideoGen
                 End Using
             Else
                 'Assume linux
-                Utils.EventLogger.Log("Plataforma: Linux", "EncodeVideo")
-                Utils.EventLogger.Log("Llamando a avconv", "EncodeVideo")
+                EventLogger.Log("Plataforma: Linux", "EncodeVideo")
+                EventLogger.Log("Llamando a avconv", "EncodeVideo")
                 Using exec As New Process
                     exec.StartInfo.FileName = "avconv"
                     exec.StartInfo.UseShellExecute = True
@@ -209,7 +194,7 @@ Public Class VideoGen
                 End Using
             End If
         Catch ex As SystemException
-            Utils.EventLogger.EX_Log("EX Encoding: " & ex.Message, "EncodeVideo")
+            EventLogger.EX_Log("EX Encoding: " & ex.Message, "EncodeVideo")
             Return False
         End Try
         Return True
@@ -226,7 +211,6 @@ Public Class VideoGen
         If Not IO.File.Exists(wlogo) Then Return False
         Return True
     End Function
-
 
     Function Createintro(ByVal imagename As String, path As String, tdate As Date) As Integer
         Dim current As Integer = 0
@@ -256,7 +240,6 @@ Public Class VideoGen
         End Using
         Return current
     End Function
-
 
     Function Blackout(ByVal current As Integer, imagename As String, path As String) As Integer
         Dim lastimg As Drawing.Image = Drawing.Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
@@ -368,7 +351,6 @@ Public Class VideoGen
         Return txtlist.ToArray
     End Function
 
-
     Function CallImages(ByVal current As Integer, imagename As String, path As String, tDate As Date) As Integer
         Dim efes As WikiBotEphe = GetEfeInfo(tDate)
         Dim c As Integer = 0
@@ -391,7 +373,7 @@ Public Class VideoGen
     Function Createimages(ByVal Path As String, imagename As String, current As Integer, efimgname As String, efimg As Image, licencename As String, licenceurl As String, artist As String, year As Integer, description As String, textsize As Double) As Integer
         If licencename.ToLower = "public domain" Then licencename = "En dominio público"
         If Not String.IsNullOrWhiteSpace(licenceurl) Then licencename = licencename & " (" & licenceurl & ")"
-        Dim CommonsName As String = "Imagen en Wikimedia Commons: " & Utils.NormalizeUnicodetext(efimgname)
+        Dim CommonsName As String = "Imagen en Wikimedia Commons: " & NormalizeUnicodetext(efimgname)
         Dim detailstext As String = CommonsName & Environment.NewLine & "Autor: " & artist & Environment.NewLine & "Licencia: " & licencename
         Dim yeardiff As Integer = Date.Now.Year - year
         Dim syeardiff As String = "Hace " & yeardiff.ToString & " años"
@@ -466,7 +448,6 @@ Public Class VideoGen
         Return current
     End Function
 
-
     Function MusicInfo(ByVal current As Integer, imagename As String, path As String, tdate As Date) As Integer
         Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
         Dim MusicDescFile As String = Hfolder & tdatestring & ".txt"
@@ -483,7 +464,6 @@ Public Class VideoGen
         End Using
         Return current
     End Function
-
 
     Public Function Repeatimage(ByVal Path As String, imagename As String, current As Integer, efimg As Image, repetitions As Integer) As Integer
         For i = 0 To repetitions
@@ -591,7 +571,7 @@ Public Class VideoGen
 
     Public Function DrawText2(ByVal text As String, ByVal font As Font, ByVal textcolor As Color, ByVal backcolor As Color, ByVal center As Boolean) As Drawing.Image
         text = text.Replace("'''", "") 'Por ahora ignoremos las negritas
-        Dim Lines As String() = Utils.GetLines(text)
+        Dim Lines As String() = GetLines(text)
         Dim images As New List(Of Drawing.Image)
         For Each line As String In Lines
             images.Add(DrawSpecialText(line, font, textcolor, backcolor))
@@ -620,7 +600,6 @@ Public Class VideoGen
         Return timg
     End Function
 
-
     Public Function DrawSpecialText(ByVal text As String, ByVal font As Font, ByVal textColor As Color, ByVal backColor As Color) As Image
         text = text.Replace("'''", "")
         text = text.Replace(Environment.NewLine, "").Replace(vbLf, "").Replace(vbCr, "").Replace(vbCrLf, "")
@@ -648,7 +627,7 @@ Public Class VideoGen
     End Function
 
     Public Function DrawText(ByVal text As String, ByVal font As Font, ByVal textColor As Color, ByVal center As Boolean) As Drawing.Image
-        Dim Lines As String() = Utils.GetLines(text)
+        Dim Lines As String() = GetLines(text)
         Dim images As New List(Of Drawing.Image)
 
         For Each line As String In Lines
@@ -714,11 +693,11 @@ Public Class VideoGen
     End Function
 
     Function GetCommonsFile(ByVal CommonsFilename As String) As Tuple(Of Image, String())
-        Dim responsestring As String = Utils.NormalizeUnicodetext(Bot.GETQUERY("action=query&format=json&titles=" & Utils.UrlWebEncode(CommonsFilename) & "&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=500"))
-        Dim thumburlmatches As String() = Utils.TextInBetween(responsestring, """thumburl"":""", """,")
-        Dim licencematches As String() = Utils.TextInBetween(responsestring, """LicenseShortName"":{""value"":""", """,")
-        Dim licenceurlmatches As String() = Utils.TextInBetween(responsestring, """LicenseUrl"":{""value"":""", """,")
-        Dim authormatches As String() = Utils.TextInBetween(responsestring, """Artist"":{""value"":""", """,")
+        Dim responsestring As String = NormalizeUnicodetext(Bot.GETQUERY("action=query&format=json&titles=" & UrlWebEncode(CommonsFilename) & "&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=500"))
+        Dim thumburlmatches As String() = TextInBetween(responsestring, """thumburl"":""", """,")
+        Dim licencematches As String() = TextInBetween(responsestring, """LicenseShortName"":{""value"":""", """,")
+        Dim licenceurlmatches As String() = TextInBetween(responsestring, """LicenseUrl"":{""value"":""", """,")
+        Dim authormatches As String() = TextInBetween(responsestring, """Artist"":{""value"":""", """,")
         Dim matchstring As String = "<[\S\s]+?>"
         Dim matchstring2 As String = "\([\S\s]+?\)"
 
