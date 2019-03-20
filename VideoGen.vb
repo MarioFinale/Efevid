@@ -4,6 +4,7 @@ Imports System.Net
 Imports System.Text.RegularExpressions
 Imports Utils.Utils
 Imports MWBot.net.WikiBot
+Imports LogEngine
 
 Public Class VideoGen
     Property Bot As Bot
@@ -11,6 +12,9 @@ Public Class VideoGen
     Private Bottom As String = Exepath & "Res" & DirSeparator & "bottom.hres"
     Private Hfolder As String = Exepath & "hfiles" & DirSeparator
     Private ImgFolder As String = Exepath & "Images" & DirSeparator
+
+    Private SettingPath As String = Exepath & "vidsettings.cfg"
+    Private SettingsProvider As New Settings(SettingPath)
 
 
     Sub New(ByRef workingbot As Bot)

@@ -3,7 +3,10 @@ Imports MWBot.net.WikiBot
 Imports Utils.Utils
 
 Module Main
-
+    Public Log_Filepath As String = Exepath & "VidLog.psv"
+    Public User_filepath As String = Exepath & "Users.psv"
+    Public User As String = "Efevid"
+    Public EventLogger As New LogEngine.LogEngine(Log_Filepath, User_filepath, User)
 
     Sub Main()
         Do While True
@@ -11,8 +14,9 @@ Module Main
                 Dim ext As String() = f.Split("."c)
                 If ext(ext.Count - 1) = "runme" Then
                     Try
-                        Log_Filepath = Exepath & "VidLog.psv"
+
                         Dim statuspath As String = Exepath & "hfiles" & DirSeparator & "status.htm"
+                        Dim ConfigFilePath As String = Exepath & "Config.cfg"
                         Try
                             Dim ESWikiBOT As Bot = New Bot(New ConfigFile(ConfigFilePath))
                             IO.File.WriteAllText(statuspath, My.Resources.status_loading)
