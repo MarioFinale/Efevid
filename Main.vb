@@ -13,7 +13,7 @@ Module Main
     Public ReadOnly Logpath As String = Exepath & "VidLog.psv"
     Public ReadOnly UserPath As String = Exepath & "Users.psv"
     Public ReadOnly SettingsPath As String = Exepath & "Settings.psv"
-    Public ReadOnly EventLogger As New LogEngine.LogEngine(Logpath, UserPath, "Efevid")
+    Public ReadOnly EventLogger As New LogEngine.LogEngine(Logpath, UserPath, "Efevid", True)
     Public ReadOnly SettingsProvider As New Settings(SettingsPath)
 
     Sub Main()
