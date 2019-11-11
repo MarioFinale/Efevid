@@ -51,7 +51,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Comp\LogEngine.dll</HintPath>
     </Reference>
-    <Reference Include="MWBot.net, Version=0.10.7014.35408, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MWBot.net, Version=0.10.7009.30788, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Comp\MWBot.net.dll</HintPath>
     </Reference>
