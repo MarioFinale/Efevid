@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2042
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EfeVid", "EfeVid.vbproj", "{120B04BD-22A6-4034-A587-0E14E6D40CF3}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Efevid", "Efevid\Efevid.vbproj", "{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{120B04BD-22A6-4034-A587-0E14E6D40CF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{120B04BD-22A6-4034-A587-0E14E6D40CF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{120B04BD-22A6-4034-A587-0E14E6D40CF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{120B04BD-22A6-4034-A587-0E14E6D40CF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DF551148-3843-4D5A-8D89-85F80908DE96}
+		SolutionGuid = {036B7A29-9595-415C-A9E4-337CCAE931DC}
 	EndGlobalSection
 EndGlobal
