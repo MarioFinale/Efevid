@@ -165,7 +165,7 @@ Public Class VideoGen
         End If
 
         EventLogger.Log("Limpiando imágenes temporales", "GenEfemerides")
-        GC.Collect() 'A veces libgdi no libera el bloqueo en las imágenes. Forzamos una recolección de basura para liberar los archivos. No es mi culpa que tenga que hacer eso ¯\_(ツ)_/¯
+        GC.Collect() 'Ye I know that it's a bad practice to directly call the GC but for some reason GDI+ doesn't release the lock on the temp file unless I do this. Not my fault tho ¯\_(ツ)_/¯
         For Each f As String In IO.Directory.GetFiles(Tpath)
             For i As Integer = 1 To 3
                 Try
