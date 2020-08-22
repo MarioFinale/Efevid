@@ -260,7 +260,7 @@ Public Class VideoGen
                                 Using timage As Drawing.Image = PasteImage(lastimg, wikiimg, New Point(CInt((lastimg.Width - wikiimg.Width) / 2), 150))
                                     current = PasteFadeIn(lastimg, timage, New Point(0, 0), imagename, path, current)
                                     lastimg = Drawing.Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
-                                    current = Repeatimage(path, imagename, current, lastimg, 40)
+                                    current = Repeatimage(path, imagename, current, lastimg, 30)
                                 End Using
                                 lastimg.Dispose()
                             End Using
@@ -492,7 +492,7 @@ Public Class VideoGen
         Using detailsimg As Drawing.Image = DrawText(detailstext, New Font(FontFamily.GenericMonospace, 10.0!, FontStyle.Regular), Color.LightGray, False)
             current = DragRightToLeft(lastimg, detailsimg, New Point(0, 650), 0.6F, imagename, Path, current)
             lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
-            current = Repeatimage(Path, imagename, current, lastimg, 100)
+            current = Repeatimage(Path, imagename, current, lastimg, 45)
         End Using
 
         For i As Integer = 1 To 3
@@ -528,7 +528,7 @@ Public Class VideoGen
         Using descimg As Drawing.Image = DrawText(description, New Font(FontFamily.GenericSansSerif, Convert.ToSingle(3.0! * 4.5), FontStyle.Regular), Color.White, True)
             Using timage As Drawing.Image = PasteImage(lastimg, descimg, New Point(CInt((lastimg.Width - descimg.Width) / 2), 250))
                 current = PasteFadeIn(lastimg, timage, New Point(0, 0), imagename, path, current)
-                current = Repeatimage(path, imagename, current, timage, 60)
+                current = Repeatimage(path, imagename, current, timage, 30)
             End Using
         End Using
         Return current
