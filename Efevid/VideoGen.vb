@@ -260,7 +260,7 @@ Public Class VideoGen
                                 Using timage As Drawing.Image = PasteImage(lastimg, wikiimg, New Point(CInt((lastimg.Width - wikiimg.Width) / 2), 150))
                                     current = PasteFadeIn(lastimg, timage, New Point(0, 0), imagename, path, current)
                                     lastimg = Drawing.Image.FromFile(path & imagename & current.ToString("0000") & ".jpg")
-                                    current = Repeatimage(path, imagename, current, lastimg, 60)
+                                    current = Repeatimage(path, imagename, current, lastimg, 40)
                                 End Using
                                 lastimg.Dispose()
                             End Using
@@ -387,7 +387,7 @@ Public Class VideoGen
 
     Function GetEfetxt(ByVal tdate As Date) As String()
         Dim fechastr As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
-        Dim efetxt As Uri = New Uri("https://tools.wmflabs.org/jembot/ef/pub/" & fechastr & "/" & fechastr & ".txt")
+        Dim efetxt As Uri = New Uri("https://jembot.toolforge.org/ef/gen/" & fechastr & "/" & fechastr & ".txt")
         Dim txt As String = String.Empty
         txt = Bot.GET(efetxt)
         If String.IsNullOrWhiteSpace(txt) Then Return {""}
@@ -492,7 +492,7 @@ Public Class VideoGen
         Using detailsimg As Drawing.Image = DrawText(detailstext, New Font(FontFamily.GenericMonospace, 10.0!, FontStyle.Regular), Color.LightGray, False)
             current = DragRightToLeft(lastimg, detailsimg, New Point(0, 650), 0.6F, imagename, Path, current)
             lastimg = Drawing.Image.FromFile(Path & imagename & current.ToString("0000") & ".jpg")
-            current = Repeatimage(Path, imagename, current, lastimg, 120)
+            current = Repeatimage(Path, imagename, current, lastimg, 100)
         End Using
 
         For i As Integer = 1 To 3
@@ -528,7 +528,7 @@ Public Class VideoGen
         Using descimg As Drawing.Image = DrawText(description, New Font(FontFamily.GenericSansSerif, Convert.ToSingle(3.0! * 4.5), FontStyle.Regular), Color.White, True)
             Using timage As Drawing.Image = PasteImage(lastimg, descimg, New Point(CInt((lastimg.Width - descimg.Width) / 2), 250))
                 current = PasteFadeIn(lastimg, timage, New Point(0, 0), imagename, path, current)
-                current = Repeatimage(path, imagename, current, timage, 90)
+                current = Repeatimage(path, imagename, current, timage, 60)
             End Using
         End Using
         Return current

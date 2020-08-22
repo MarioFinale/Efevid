@@ -24,10 +24,6 @@ Module Main
 
         Dim setProv As New LogEngine.Settings(SettingsPath)
 
-
-
-
-
         Do While True
             If Not IO.Directory.Exists(Reqfolder) Then
                 IO.Directory.CreateDirectory(Reqfolder)
