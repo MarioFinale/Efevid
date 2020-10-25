@@ -3,11 +3,10 @@ Imports System.Drawing
 Imports System.Drawing.Imaging
 Imports System.IO
 Imports System.Net
-Imports System.Text
 Imports System.Text.RegularExpressions
-Imports System.Xml
 Imports Efevid.Ephe
 Imports MWBot.net.WikiBot
+Imports MWBot.net.Utils
 Imports Svg
 Imports Image = System.Drawing.Image
 
@@ -38,14 +37,65 @@ Public Class NewVideoGen
     ''' Genera las imágenes de las efemérides del día indicado.
     ''' </summary>
     Public Sub Generate()
+        EventLogger.Log("Generando archivos .htm efemérides " & CurrentDate.ToString("dd/MM/yy"), "Generate")
+        GenerateHtmlDesc()
+        EventLogger.Log("Cargando logo de intro efemérides " & CurrentDate.ToString("dd/MM/yy"), "Generate")
         LoadIntroLogo()
+        EventLogger.Log("Generando intro efemérides " & CurrentDate.ToString("dd/MM/yy"), "Generate")
         GenerateIntro(40)
         Dim ephq As Integer = CInt(Min(5, Ephs.Length))
         For i As Integer = 1 To ephq
+            EventLogger.Log("Generando efemérides " & CurrentDate.ToString("dd/MM/yy") & " (" & i & " de " & ephq & ")", "Generate")
             GenerateEphe(310, Ephs(i - 1))
         Next
+        EventLogger.Log("Generando outro efemérides " & CurrentDate.ToString("dd/MM/yy"), "Generate")
         GenerateOutro(80)
         Encode(OutputDirectory, CurrentDate)
+    End Sub
+
+    Sub GenerateHtmlDesc()
+
+        Dim currentDateString As String = CurrentDate.Year.ToString & CurrentDate.Month.ToString("00") & CurrentDate.Day.ToString("00")
+        Dim Fecha As String = CurrentDate.ToString("d 'de' MMMM", New Globalization.CultureInfo("es-ES"))
+        Dim descriptionHtmlFilePath As String = ResultDir & currentDateString & ".htm"
+        Dim musicDescriptionFilePath As String = ResultDir & currentDateString & ".txt"
+
+        Dim headerFilePath As String = ResourcesDir & "header.hres"
+        Dim bottomFilePath As String = ResourcesDir & "bottom.hres"
+
+
+
+        If Not IO.File.Exists(headerFilePath) Then
+            IO.File.Create(headerFilePath).Close()
+        End If
+        If Not IO.File.Exists(bottomFilePath) Then
+            IO.File.Create(bottomFilePath).Close()
+        End If
+
+        If Not IO.File.Exists(descriptionHtmlFilePath) Then
+            IO.File.Create(descriptionHtmlFilePath).Close()
+        End If
+
+        If Not IO.File.Exists(musicDescriptionFilePath) Then
+            IO.File.Create(musicDescriptionFilePath).Close()
+        End If
+
+        Dim htext As String = IO.File.ReadAllText(headerFilePath)
+        Dim btext As String = IO.File.ReadAllText(bottomFilePath)
+
+
+        Dim efeinfotext As String = htext & CType(SettingsProvider.Get("VID_NAME"), String) & " " & Fecha & Environment.NewLine
+        efeinfotext &= Environment.NewLine & "Enlaces:"
+
+        For Each ef As WikiEphe In Ephs
+            efeinfotext &= Environment.NewLine & "• "
+            'efeinfotext &= RemoveExcessOfSpaces(ef.Description.Replace("'", "").Trim().Replace(Environment.NewLine, " ").Trim())
+            efeinfotext &= " " & ef.Page & ": "
+            efeinfotext &= "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
+        Next
+        efeinfotext = efeinfotext & Environment.NewLine & IO.File.ReadAllText(musicDescriptionFilePath, System.Text.Encoding.UTF8)
+        efeinfotext = efeinfotext & btext
+        IO.File.WriteAllText(descriptionHtmlFilePath, efeinfotext)
     End Sub
 
     Sub LoadIntroLogo()
@@ -67,14 +117,15 @@ Public Class NewVideoGen
                 exec.StartInfo.FileName = "ffmpeg"
                 exec.StartInfo.UseShellExecute = True
                 If IO.File.Exists(MusicFile) Then
-                    exec.StartInfo.Arguments = "-y -r 29 -i """ & tpath & "ef_%04d.svg""" & " -i """ & MusicFile & """ -vcodec libx264 -preset slower -crf 19 -shortest -strict -2 """ & ResultDir & tdatestring & ".mp4"""
+                    exec.StartInfo.Arguments = "-y -r 29 -i """ & tpath & "ef_%04d.svg""" & " -i """ & MusicFile & """ -vcodec libx264 -preset slower -crf 19 -pix_fmt yuv420p -shortest -strict -2 """ & ResultDir & tdatestring & ".mp4"""
                 Else
-                    exec.StartInfo.Arguments = "-y -r 29 -i """ & tpath & "ef_%04d.svg""" & " -vcodec libx264 -preset slower -crf 19 -shortest -strict -2 """ & ResultDir & tdatestring & ".mp4"""
+                    exec.StartInfo.Arguments = "-y -r 29 -i """ & tpath & "ef_%04d.svg""" & " -vcodec libx264 -preset slower -crf 19 -pix_fmt yuv420p -shortest -strict -2 """ & ResultDir & tdatestring & ".mp4"""
                 End If
                 exec.Start()
                 exec.WaitForExit()
             End Using
             Dim dir As New DirectoryInfo(TempDir)
+            EventLogger.Log("Eliminando archivos temporales", "EncodeVideo")
             For Each file As FileInfo In dir.EnumerateFiles()
                 file.Delete()
             Next
@@ -175,8 +226,8 @@ Public Class NewVideoGen
             Dim opacity As Double = 1 - LinealScaleToLog(fadein_2, i)
             Dim bgopacity As Double = 1 - LinealScaleToLog(fadein_2, i)
             Dim blackBarOpacity As Double = LinealScaleToLog(fadein_2, i)
-            If bgopacity > 0.8 Then
-                bgopacity = 0.8
+            If bgopacity > 0.45 Then
+                bgopacity = 0.45
             End If
             currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.000000""", "fill-opacity=""" & bgopacity & """")
             currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""00.000""", "fill-opacity=""" & blackBarOpacity.ToString() & """")
@@ -195,22 +246,24 @@ Public Class NewVideoGen
             For f As Integer = 300 To 320
                 currentFrameSVG = currentFrameSVG.Replace("<text x=""" & f & "px""", "<text x=""" & currX & "px""")
             Next
-
-            ephLastSvg = currentFrameSVG
+            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
             SvgTextImageFile(currentFrameFileName, currentFrameSVG)
         Next
 
         For i As Integer = 1 To staticFrames
             EffectiveFrames += 1
+            Dim currentFrameSVG As String = ephBaseSvg
+            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
-            SvgTextImageFile(currentFrameFileName, ephBaseSvg)
+            SvgTextImageFile(currentFrameFileName, currentFrameSVG)
         Next
 
         For i As Integer = 1 To fadeOutFrames
             EffectiveFrames += 1
             Dim currentFrameSVG As String = ephBaseSvg
             Dim opacity As Double = 1 - LinealScaleToLog(fadeOutFrames, i)
+            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
             currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""00.000""", "fill-opacity=""" & opacity.ToString() & """")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
             SvgTextImageFile(currentFrameFileName, currentFrameSVG)
@@ -364,31 +417,29 @@ Public Class NewVideoGen
 
     Private Function SvgTextImageFile(ByVal imagePath As String, ByVal svgContent As String) As Boolean
         IO.File.WriteAllText(imagePath, svgContent)
-
-        'Dim doc As New XmlDocument
-        'doc.LoadXml(svgContent)
-        'Dim tdoc As SvgDocument = SvgDocument.Open(doc)
-        'Using tbitmap As Bitmap = tdoc.Draw()
-        '    tbitmap.Save(imagePath, ImageFormat.svg)
-        'End Using
         Return True
     End Function
 
 
-    Private Function PicFromUrl(ByVal url As String) As Image
+    Private Function PicFromUrl(ByVal url As String, ByVal retries As Integer) As Image
         Dim img As Drawing.Image = New Bitmap(1, 1)
-        Try
-            Dim request = WebRequest.Create(url)
-            Using response = request.GetResponse()
-                Using stream = response.GetResponseStream()
-                    img = CType(Drawing.Image.FromStream(stream).Clone, Image)
+        For i As Integer = 0 To retries
+            Try
+                Dim request = WebRequest.Create(url)
+                Using response = request.GetResponse()
+                    Using stream = response.GetResponseStream()
+                        img = CType(Drawing.Image.FromStream(stream).Clone, Image)
+                    End Using
                 End Using
-            End Using
-            Return img
-        Catch ex As Exception
-            img.Dispose()
-            Return Nothing
-        End Try
+                Return img
+            Catch ex As Exception
+                img.Dispose()
+                Return Nothing
+            End Try
+        Next
+        img.Dispose()
+        EventLogger.EX_Log("Problemas al obtener una imagen desde Commons", "PicFromUrl")
+        Throw New MWBot.net.MaxRetriesExeption
     End Function
 
     Private Function GetCommonsFile(ByVal CommonsFilename As String) As Tuple(Of Image, String())
@@ -427,7 +478,7 @@ Public Class NewVideoGen
         End If
         Dim img As Image = New Bitmap(1, 1)
         If thumburlmatches.Count > 0 Then
-            img = PicFromUrl(thumburlmatches(0))
+            img = PicFromUrl(thumburlmatches(0), 5)
         End If
         If String.IsNullOrWhiteSpace(author) Or (author.ToLower.Contains("unknown")) Then
             author = "Desconocido"

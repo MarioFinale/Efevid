@@ -40,20 +40,28 @@ Module Main
                 For i As Integer = 0 To 7
                     Dim tdate As Date = Date.Now.AddDays(i)
                     Dim reqEphes As WikiEphe() = EphProv.GetEphes(tdate).EfeDetails.ToArray()
-                    Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
-                    Try
-                        If Not IO.File.Exists(ResultDir & tdatestring & ".txt") Then
-                            IO.File.Create(ResultDir & tdatestring & ".txt").Close()
-                        End If
-                        Dim outrotxt As String = IO.File.ReadAllText(ResultDir & tdatestring & ".txt")
-                        Dim gen As New NewVideoGen(workerBot, {ResourcesDir & "intro.svg", ResourcesDir & "eph.svg", ResourcesDir & "outro.svg"}, TempDir, Date.Now, reqEphes, outrotxt)
-                        gen.Generate()
-                    Catch ex As Exception
-                        EventLogger.EX_Log(ex.Message, User)
-                    Finally
-                        IO.File.Delete(triggerFile)
-                    End Try
+                    Dim revised As Boolean = EphProv.GetEphes(tdate).Revised
+                    If revised Then
+                        Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
+                        Try
+                            If Not IO.File.Exists(ResultDir & tdatestring & ".txt") Then
+                                IO.File.Create(ResultDir & tdatestring & ".txt").Close()
+                            End If
+                            Dim outrotxt As String = IO.File.ReadAllText(ResultDir & tdatestring & ".txt")
+                            Dim gen As New NewVideoGen(workerBot, {ResourcesDir & "intro.svg", ResourcesDir & "eph.svg", ResourcesDir & "outro.svg"}, TempDir, tdate, reqEphes, outrotxt)
+                            gen.Generate()
+                        Catch ex As Exception
+                            EventLogger.EX_Log(ex.Message, User)
+                            EventLogger.EX_Log(ex.Source, User)
+                            EventLogger.EX_Log(ex.StackTrace, User)
+                        Finally
+                            IO.File.Delete(triggerFile)
+                        End Try
+                    Else
+                        EventLogger.Log("Efemérides " & tdate.ToString("dd/MM/yy") & " no revisadas", "Main")
+                    End If
                 Next
+                EventLogger.Log("Proceso completo", "Main")
             End If
             IO.File.Delete(triggerFile)
             System.Threading.Thread.Sleep(500)
@@ -121,6 +129,11 @@ Module Main
         Dim logo As Boolean = SettingsProvider.Contains("INTRO_LOGO")
         If Not logo Then
             SettingsProvider.NewVal("INTRO_LOGO", ResourcesDir & "wlogo.png")
+        End If
+
+        Dim vidName As Boolean = SettingsProvider.Contains("VID_NAME")
+        If Not logo Then
+            SettingsProvider.NewVal("VID_NAME", "Efemérides")
         End If
 
 
