@@ -1,72 +1,135 @@
-﻿Imports MWBot.net.WikiBot
-Imports Utils.Utils
+﻿Option Strict On
+Imports Efevid.Ephe
+Imports MWBot.net.WikiBot
+Imports MWBot.net.Utils
 
 Module Main
-    Public ReadOnly Header As String = Exepath & "Res" & DirSeparator & "header.hres"
-    Public ReadOnly Bottom As String = Exepath & "Res" & DirSeparator & "bottom.hres"
-    Public ReadOnly Hfolder As String = Exepath & "hfiles" & DirSeparator
-    Public ReadOnly ImgFolder As String = Exepath & "Images" & DirSeparator
-    Public ReadOnly Reqfolder As String = Exepath & "req" & DirSeparator
+    Public WorkerDir As String
+    Public TempDir As String
+    Public ResourcesDir As String
+    Public ResultDir As String
+
+
+    'Public ReadOnly Header As String = Exepath & "Res" & DirSeparator & "header.hres"
+    'Public ReadOnly Bottom As String = Exepath & "Res" & DirSeparator & "bottom.hres"
+
+    Public statuspath As String
+    Public triggerFile As String
+
+
     Public ReadOnly ConfigFilePath As String = Exepath & "Config.cfg"
     Public ReadOnly Logpath As String = Exepath & "VidLog.psv"
     Public ReadOnly UserPath As String = Exepath & "Users.psv"
-    Public ReadOnly SettingsPath As String = Exepath & "Settings.psv"
-    Public ReadOnly EventLogger As New LogEngine.LogEngine(Logpath, UserPath, "Efevid", True)
+
+    Public ReadOnly EventLogger As New MWBot.net.LogEngine(Logpath, UserPath, "Efevid", True)
     Public ReadOnly Log_Filepath As String = Exepath & "VidLog.psv"
     Public ReadOnly User_filepath As String = Exepath & "Users.psv"
     Public ReadOnly User As String = "Efevid"
-    Public ReadOnly reqpath As String = Exepath & DirSeparator & "req"
-    Public ReadOnly reqfile As String = reqpath & DirSeparator & "efevid.runme"
-    Public ReadOnly statuspath As String = Exepath & "hfiles" & DirSeparator & "status.htm"
+
+    Public SettingsPath As String
+    Public SettingsProvider As LogEngine.Settings
 
 
     Sub Main()
-
-        Dim setProv As New LogEngine.Settings(SettingsPath)
-
+        LoadSettings()
         Do While True
-            If Not IO.Directory.Exists(Reqfolder) Then
-                IO.Directory.CreateDirectory(Reqfolder)
-            End If
-            If Not IO.Directory.Exists(Hfolder) Then
-                IO.Directory.CreateDirectory(Hfolder)
-            End If
-            If Not IO.Directory.Exists(ImgFolder) Then
-                IO.Directory.CreateDirectory(ImgFolder)
-            End If
-            If Not IO.File.Exists(statuspath) Then
-                IO.File.Create(statuspath).Close()
-            End If
+            If UpdateRequested() Then
+                Dim workerBot As Bot = New Bot(ConfigFilePath, EventLogger)
+                Dim EphProv As New EpheProvider(workerBot)
 
-            If IO.File.Exists(reqfile) Then
-                Try
+                For i As Integer = 0 To 7
+                    Dim tdate As Date = Date.Now.AddDays(i)
+                    Dim reqEphes As WikiEphe() = EphProv.GetEphes(tdate).EfeDetails.ToArray()
+                    Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
                     Try
-                        Dim ESWikiBOT As Bot = New Bot(ConfigFilePath, EventLogger)
-                        IO.File.WriteAllText(statuspath, My.Resources.status_loading)
-                        Dim igen As New VideoGen(ESWikiBOT)
-                        IO.File.WriteAllText(statuspath, My.Resources.status_gen)
-                        igen.CheckEfe()
-                        IO.File.WriteAllText(statuspath, My.Resources.status_OK)
+                        If Not IO.File.Exists(ResultDir & tdatestring & ".txt") Then
+                            IO.File.Create(ResultDir & tdatestring & ".txt").Close()
+                        End If
+                        Dim outrotxt As String = IO.File.ReadAllText(ResultDir & tdatestring & ".txt")
+                        Dim gen As New NewVideoGen(workerBot, {ResourcesDir & "intro.svg", ResourcesDir & "eph.svg", ResourcesDir & "outro.svg"}, TempDir, Date.Now, reqEphes, outrotxt)
+                        gen.Generate()
                     Catch ex As Exception
-                        IO.File.WriteAllText(statuspath, My.Resources.status_OK)
-                        EventLogger.EX_Log(ex.Message, "Checker")
+                        EventLogger.EX_Log(ex.Message, User)
+                    Finally
+                        IO.File.Delete(triggerFile)
                     End Try
-                Catch ex As Exception
-                    EventLogger.EX_Log(ex.Message, "Checker")
-                End Try
-                Try
-                    Threading.Thread.Sleep(3000)
-                    IO.File.Delete(reqfile)
-                    IO.File.Delete(Log_Filepath)
-                    IO.File.Create(Log_Filepath).Close()
-                Catch ex As Exception
-
-                    EventLogger.EX_Log(ex.Message, "delfiles")
-                End Try
+                Next
             End If
+            IO.File.Delete(triggerFile)
             System.Threading.Thread.Sleep(500)
         Loop
 
     End Sub
+
+    Function UpdateRequested() As Boolean
+        If Not IO.Directory.Exists(WorkerDir) Then
+            IO.Directory.CreateDirectory(WorkerDir)
+        End If
+        If Not IO.Directory.Exists(TempDir) Then
+            IO.Directory.CreateDirectory(TempDir)
+        End If
+        If Not IO.Directory.Exists(ResourcesDir) Then
+            IO.Directory.CreateDirectory(ResourcesDir)
+        End If
+        If Not IO.Directory.Exists(ResultDir) Then
+            IO.Directory.CreateDirectory(ResultDir)
+        End If
+        If Not IO.File.Exists(statuspath) Then
+            IO.File.Create(statuspath).Close()
+        End If
+        Return IO.File.Exists(triggerFile)
+    End Function
+
+    Sub LoadSettings()
+        SettingsPath = Exepath & "Settings.psv"
+        SettingsProvider = New LogEngine.Settings(SettingsPath)
+
+        Dim jburi As Boolean = SettingsProvider.Contains("JBURI")
+        If Not jburi Then
+            SettingsProvider.NewVal("JBURI", "https://jembot.toolforge.org/ef/gen/")
+        End If
+
+        Dim useAlternativeSource As Boolean = SettingsProvider.Contains("USEALTSOURCE")
+        If Not useAlternativeSource Then
+            SettingsProvider.NewVal("USEALTSOURCE", 1)
+        End If
+
+        Dim wdir As Boolean = SettingsProvider.Contains("WORKER_DIR")
+        If Not wdir Then
+            SettingsProvider.NewVal("WORKER_DIR", Exepath & "worker" & DirSeparator)
+        End If
+        WorkerDir = CType(SettingsProvider.Get("WORKER_DIR"), String)
+
+        Dim tmpdir As Boolean = SettingsProvider.Contains("TEMP_DIR")
+        If Not tmpdir Then
+            SettingsProvider.NewVal("TEMP_DIR", Exepath & "temp" & DirSeparator)
+        End If
+        TempDir = CType(SettingsProvider.Get("TEMP_DIR"), String)
+
+        Dim resdir As Boolean = SettingsProvider.Contains("RES_DIR")
+        If Not resdir Then
+            SettingsProvider.NewVal("RES_DIR", Exepath & "resources" & DirSeparator)
+        End If
+        ResourcesDir = CType(SettingsProvider.Get("RES_DIR"), String)
+
+        Dim resultd As Boolean = SettingsProvider.Contains("RESULT_DIR")
+        If Not resultd Then
+            SettingsProvider.NewVal("RESULT_DIR", Exepath & "result" & DirSeparator)
+        End If
+        ResultDir = CType(SettingsProvider.Get("RESULT_DIR"), String)
+
+        Dim logo As Boolean = SettingsProvider.Contains("INTRO_LOGO")
+        If Not logo Then
+            SettingsProvider.NewVal("INTRO_LOGO", ResourcesDir & "wlogo.png")
+        End If
+
+
+        statuspath = WorkerDir & "status.htm"
+        triggerFile = WorkerDir & "efevid.runme"
+
+    End Sub
+
+
+
 
 End Module

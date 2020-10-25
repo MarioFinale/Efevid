@@ -8,6 +8,7 @@ Imports Utils.Utils
 Imports MWBot.net.WikiBot
 Imports LogEngine
 Imports Image = System.Drawing.Image
+Imports Efevid.Ephe
 
 Public Class VideoGen
     Property Bot As Bot
@@ -30,7 +31,7 @@ Public Class VideoGen
         For i As Integer = 0 To 6
             SettingsProvider.NewVal("efecheck", False.ToString)
             SettingsProvider.NewVal("efe", "")
-            Dim tdate As Date = Date.UtcNow.AddDays(i)
+            Dim tdate As Date = Date.UtcNow.AddDays(-10 +i)
             Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
             EventLogger.Log("Generar efemérides " & tdatestring, "GenEfemerides")
             Dim tef As WikiBotEphe = GetEfeInfo(tdate)
@@ -55,7 +56,6 @@ Public Class VideoGen
 
 
     Function CheckEfe() As Boolean
-
 
         Dim tdate As Date = Date.Now.AddDays(-2)
         Dim yfile1 As String = Exepath & "hfiles" & DirSeparator & tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00") & ".htm"
@@ -120,14 +120,12 @@ Public Class VideoGen
         Dim efeinfotext As String = htext & "Efemérides del " & Fecha & " en Wikipedia, la enciclopedia libre."
         efeinfotext = efeinfotext & Environment.NewLine & Environment.NewLine & "Enlaces:"
         Dim efes As WikiBotEphe = GetEfeInfo(tdate)
+
         For Each ef As WikiEphe In efes.EfeDetails
-            efeinfotext = efeinfotext & Environment.NewLine & "• "
-            If ef.Type = WikiEpheType.Nacimiento Then
-                efeinfotext = efeinfotext & "Nacimiento de "
-            End If
-            If ef.Type = WikiEpheType.Defunción Then
-                efeinfotext = efeinfotext & "Muerte de "
-            End If
+            efeinfotext &= Environment.NewLine & "• "
+            efeinfotext &= ef.Description.Replace("'", "")
+
+
             efeinfotext = efeinfotext & ef.Page & ": "
             efeinfotext = efeinfotext & "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
         Next
@@ -228,10 +226,10 @@ Public Class VideoGen
     End Function
 
     Function CheckResources() As Boolean
-        Dim bmargin As String = Exepath & "Res" & DirSeparator & "bmargin.png"
-        Dim Efetxt As String = Exepath & "Res" & DirSeparator & "efetxt.png"
-        Dim tbg As String = Exepath & "Res" & DirSeparator & "tbg.png"
-        Dim wlogo As String = Exepath & "Res" & DirSeparator & "wlogo.png"
+        Dim bmargin As String = ResourcesDir & "bmargin.png"
+        Dim Efetxt As String = ResourcesDir & "efetxt.png"
+        Dim wlogo As String = ResourcesDir & "wikipedia_logo.png"
+
         If Not IO.File.Exists(bmargin) Then Return False
         If Not IO.File.Exists(Efetxt) Then Return False
         If Not IO.File.Exists(tbg) Then Return False
@@ -387,9 +385,8 @@ Public Class VideoGen
 
     Function GetEfetxt(ByVal tdate As Date) As String()
         Dim fechastr As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
-        Dim efetxt As Uri = New Uri("https://jembot.toolforge.org/ef/gen/" & fechastr & "/" & fechastr & ".txt")
-        Dim txt As String = String.Empty
-        txt = Bot.GET(efetxt)
+        Dim efetxt As Uri = New Uri(CType(SettingsProvider.Get("JBURI"), String) & fechastr & "/" & fechastr & ".txt")
+        Dim txt As String = Bot.GET(efetxt)
         If String.IsNullOrWhiteSpace(txt) Then Return {""}
         Dim txtlist As List(Of String) = txt.Split(CType(vbLf, Char())).ToList
         For i As Integer = 0 To txtlist.Count - 1
