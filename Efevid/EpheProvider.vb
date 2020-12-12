@@ -3,7 +3,8 @@ Imports System.Globalization
 Imports System.Text.RegularExpressions
 Imports Efevid.Ephe
 Imports MWBot.net.WikiBot
-Imports Util = Utils.Utils
+Imports MWBot.net.Utility
+Imports MWBot.net.Utility.Utils
 
 Public Class EpheProvider
 
@@ -77,7 +78,7 @@ Public Class EpheProvider
 
     Private Function GetEpheYearFromEventString(ByVal eventStr As String) As Integer
         Dim introStr As String = eventStr.Substring(0, 15)
-        Dim yearStr As String() = Util.TextInBetween(introStr, "[[", "]]")
+        Dim yearStr As String() = TextInBetween(introStr, "[[", "]]")
         Dim year As Integer = 0
         For Each y As String In yearStr
             year = Integer.Parse(y)
@@ -90,10 +91,10 @@ Public Class EpheProvider
         If eventLenght > 80 Then eventLenght = 80
         Dim introStr As String = eventStr.Substring(0, eventLenght)
 
-        Dim nac As Integer = Util.CountOccurrences(introStr.ToLowerInvariant, " nace ")
-        Dim fall As Integer = Util.CountOccurrences(introStr.ToLowerInvariant, " fallece ")
-        fall += Util.CountOccurrences(introStr, " muere ")
-        fall += Util.CountOccurrences(introStr, " asesinado ")
+        Dim nac As Integer = CountOccurrences(introStr.ToLowerInvariant, " nace ")
+        Dim fall As Integer = CountOccurrences(introStr.ToLowerInvariant, " fallece ")
+        fall += CountOccurrences(introStr, " muere ")
+        fall += CountOccurrences(introStr, " asesinado ")
 
         Dim eType As WikiEpheType
 
@@ -113,8 +114,8 @@ Public Class EpheProvider
     End Function
 
     Private Function GetEphePageFromEventString(ByVal eventStr As String) As String
-        Dim links As String() = Util.TextInBetweenInclusive(eventStr, "[[", "]]")
-        Dim tPage As String = Util.GetLinkText(links(1)).Item2
+        Dim links As String() = TextInBetweenInclusive(eventStr, "[[", "]]")
+        Dim tPage As String = GetLinkText(links(1)).Item2
         Return tPage
     End Function
 
@@ -214,7 +215,7 @@ Public Class EpheProvider
                         tef.Page = varval
                     End If
                     If varname = "tamaño" Then
-                        tef.TextSize = Double.Parse(varval.Replace(","c, Util.DecimalSeparator))
+                        tef.TextSize = Double.Parse(varval.Replace(","c, DecimalSeparator))
                     End If
                     If varname = "tipo" Then
                         Select Case varval

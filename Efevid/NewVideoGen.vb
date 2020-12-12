@@ -6,7 +6,8 @@ Imports System.Net
 Imports System.Text.RegularExpressions
 Imports Efevid.Ephe
 Imports MWBot.net.WikiBot
-Imports MWBot.net.Utils
+Imports MWBot.net.Utility
+Imports MWBot.net.Utility.Utils
 Imports Svg
 Imports Image = System.Drawing.Image
 
@@ -89,7 +90,6 @@ Public Class NewVideoGen
 
         For Each ef As WikiEphe In Ephs
             efeinfotext &= Environment.NewLine & "• "
-            'efeinfotext &= RemoveExcessOfSpaces(ef.Description.Replace("'", "").Trim().Replace(Environment.NewLine, " ").Trim())
             efeinfotext &= " " & ef.Page & ": "
             efeinfotext &= "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
         Next
@@ -443,11 +443,11 @@ Public Class NewVideoGen
     End Function
 
     Private Function GetCommonsFile(ByVal CommonsFilename As String) As Tuple(Of Image, String())
-        Dim responsestring As String = Utils.Utils.NormalizeUnicodetext(WorkerBot.GETQUERY("action=query&format=json&titles=" & Utils.Utils.UrlWebEncode(CommonsFilename) & "&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=500"))
-        Dim thumburlmatches As String() = Utils.Utils.TextInBetween(responsestring, """thumburl"":""", """,")
-        Dim licencematches As String() = Utils.Utils.TextInBetween(responsestring, """LicenseShortName"":{""value"":""", """,")
-        Dim licenceurlmatches As String() = Utils.Utils.TextInBetween(responsestring, """LicenseUrl"":{""value"":""", """,")
-        Dim authormatches As String() = Utils.Utils.TextInBetween(responsestring, """Artist"":{""value"":""", """,")
+        Dim responsestring As String = NormalizeUnicodetext(WorkerBot.GETQUERY("action=query&format=json&titles=" & UrlWebEncode(CommonsFilename) & "&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=500"))
+        Dim thumburlmatches As String() = TextInBetween(responsestring, """thumburl"":""", """,")
+        Dim licencematches As String() = TextInBetween(responsestring, """LicenseShortName"":{""value"":""", """,")
+        Dim licenceurlmatches As String() = TextInBetween(responsestring, """LicenseUrl"":{""value"":""", """,")
+        Dim authormatches As String() = TextInBetween(responsestring, """Artist"":{""value"":""", """,")
         Dim matchstring As String = "<[\S\s]+?>"
         Dim matchstring2 As String = "\([\S\s]+?\)"
 

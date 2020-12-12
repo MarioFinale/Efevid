@@ -1,7 +1,8 @@
 ﻿Option Strict On
 Imports Efevid.Ephe
 Imports MWBot.net.WikiBot
-Imports MWBot.net.Utils
+Imports MWBot.net.Utility
+Imports MWBot.net.Utility.Utils
 
 Module Main
     Public WorkerDir As String
@@ -9,9 +10,6 @@ Module Main
     Public ResourcesDir As String
     Public ResultDir As String
 
-
-    'Public ReadOnly Header As String = Exepath & "Res" & DirSeparator & "header.hres"
-    'Public ReadOnly Bottom As String = Exepath & "Res" & DirSeparator & "bottom.hres"
 
     Public statuspath As String
     Public triggerFile As String
@@ -21,13 +19,13 @@ Module Main
     Public ReadOnly Logpath As String = Exepath & "VidLog.psv"
     Public ReadOnly UserPath As String = Exepath & "Users.psv"
 
-    Public ReadOnly EventLogger As New MWBot.net.LogEngine(Logpath, UserPath, "Efevid", True)
+    Public ReadOnly EventLogger As New SimpleLogger(Logpath, UserPath, "Efevid", True)
     Public ReadOnly Log_Filepath As String = Exepath & "VidLog.psv"
     Public ReadOnly User_filepath As String = Exepath & "Users.psv"
     Public ReadOnly User As String = "Efevid"
 
     Public SettingsPath As String
-    Public SettingsProvider As LogEngine.Settings
+    Public SettingsProvider As Settings
 
 
     Sub Main()
@@ -38,7 +36,7 @@ Module Main
                 Dim EphProv As New EpheProvider(workerBot)
 
                 For i As Integer = 0 To 7
-                    Dim tdate As Date = Date.Now.AddDays(i)
+                    Dim tdate As Date = Date.Now.AddDays(-1 + i)
                     Dim reqEphes As WikiEphe() = EphProv.GetEphes(tdate).EfeDetails.ToArray()
                     Dim revised As Boolean = EphProv.GetEphes(tdate).Revised
                     If revised Then
@@ -90,7 +88,7 @@ Module Main
 
     Sub LoadSettings()
         SettingsPath = Exepath & "Settings.psv"
-        SettingsProvider = New LogEngine.Settings(SettingsPath)
+        SettingsProvider = New Settings(SettingsPath)
 
         Dim jburi As Boolean = SettingsProvider.Contains("JBURI")
         If Not jburi Then
@@ -132,7 +130,7 @@ Module Main
         End If
 
         Dim vidName As Boolean = SettingsProvider.Contains("VID_NAME")
-        If Not logo Then
+        If Not vidName Then
             SettingsProvider.NewVal("VID_NAME", "Efemérides")
         End If
 
