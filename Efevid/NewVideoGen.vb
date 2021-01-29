@@ -273,7 +273,7 @@ Public Class NewVideoGen
     End Function
 
     Private Function GenerateOutro(ByVal frames As Integer) As Integer
-        Dim ephline As String = "<text x=""300px"" y=""SEPARATION"" text-anchor=""middle"" font-family=""Verdana"" font-size=""20"" fill=""#ebebf0"" lengthAdjust=""spacing"">TEXT_LINE</text>"
+        Dim ephline As String = "<text x=""300px"" y=""SEPARATION"" text-anchor=""middle"" font-family=""Verdana"" font-size=""15"" fill=""#ebebf0"" lengthAdjust=""spacing"">TEXT_LINE</text>"
         Dim fadein_frames As Integer = frames \ 2
 
 
@@ -423,6 +423,7 @@ Public Class NewVideoGen
 
     Private Function PicFromUrl(ByVal url As String, ByVal retries As Integer) As Image
         Dim img As Drawing.Image = New Bitmap(1, 1)
+
         For i As Integer = 0 To retries
             Try
                 Dim request = WebRequest.Create(url)
@@ -433,8 +434,7 @@ Public Class NewVideoGen
                 End Using
                 Return img
             Catch ex As Exception
-                img.Dispose()
-                Return Nothing
+                img = New Bitmap(1, 1)
             End Try
         Next
         img.Dispose()
@@ -478,7 +478,7 @@ Public Class NewVideoGen
         End If
         Dim img As Image = New Bitmap(1, 1)
         If thumburlmatches.Count > 0 Then
-            img = PicFromUrl(thumburlmatches(0), 5)
+            img = PicFromUrl(thumburlmatches(0), 6)
         End If
         If String.IsNullOrWhiteSpace(author) Or (author.ToLower.Contains("unknown")) Then
             author = "Desconocido"

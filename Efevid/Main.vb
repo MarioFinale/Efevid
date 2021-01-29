@@ -35,8 +35,8 @@ Module Main
                 Dim workerBot As Bot = New Bot(ConfigFilePath, EventLogger)
                 Dim EphProv As New EpheProvider(workerBot)
 
-                For i As Integer = 0 To 7
-                    Dim tdate As Date = Date.Now.AddDays(-1 + i)
+                For i As Integer = 0 To 8
+                    Dim tdate As Date = Date.Now.AddDays(-2 + i)
                     Dim reqEphes As WikiEphe() = EphProv.GetEphes(tdate).EfeDetails.ToArray()
                     Dim revised As Boolean = EphProv.GetEphes(tdate).Revised
                     If revised Then

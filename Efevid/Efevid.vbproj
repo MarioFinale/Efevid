@@ -5,8 +5,8 @@
     <RootNamespace>Efevid</RootNamespace>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ReferencePath>E:\Users\MarioFinale\Documents\GitHub\Efevid\Efevid\..\..\Comp\</ReferencePath>
-    <AssemblyVersion>1.0.2010.40988</AssemblyVersion>
-    <FileVersion>1.0.2010.40988</FileVersion>
+    <AssemblyVersion>1.0.2101.23927</AssemblyVersion>
+    <FileVersion>1.0.2101.23927</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
