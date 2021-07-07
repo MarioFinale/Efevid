@@ -426,7 +426,8 @@ Public Class NewVideoGen
 
         For i As Integer = 0 To retries
             Try
-                Dim request = WebRequest.Create(url)
+                Dim request As HttpWebRequest = CType(HttpWebRequest.Create(url), HttpWebRequest)
+                request.UserAgent = UserAgent
                 Using response = request.GetResponse()
                     Using stream = response.GetResponseStream()
                         img = CType(Drawing.Image.FromStream(stream).Clone, Image)

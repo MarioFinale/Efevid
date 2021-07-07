@@ -26,15 +26,16 @@ Module Main
 
     Public SettingsPath As String
     Public SettingsProvider As Settings
-
+    Public UserAgent As String
 
     Sub Main()
         LoadSettings()
         Do While True
             If UpdateRequested() Then
                 Dim workerBot As Bot = New Bot(ConfigFilePath, EventLogger)
+                UserAgent = "PeriodiBOT Efemerides /" + workerBot.Version + " ( https://es.wikipedia.org/wiki/Wikipedia:Efem%C3%A9rides ) " + "MWBOT.net /" + workerBot.MWBotVersion
                 Dim EphProv As New EpheProvider(workerBot)
-
+                workerBot.BotApiHandler.UserAgent = UserAgent
                 For i As Integer = 0 To 8
                     Dim tdate As Date = Date.Now.AddDays(-2 + i)
                     Dim reqEphes As WikiEphe() = EphProv.GetEphes(tdate).EfeDetails.ToArray()
