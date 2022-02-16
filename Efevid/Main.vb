@@ -37,9 +37,15 @@ Module Main
                 Dim EphProv As New EpheProvider(workerBot)
                 workerBot.BotApiHandler.UserAgent = UserAgent
                 For i As Integer = 0 To 8
-                    Dim tdate As Date = Date.Now.AddDays(-2 + i)
-                    Dim reqEphes As WikiEphe() = EphProv.GetEphes(tdate).EfeDetails.ToArray()
-                    Dim revised As Boolean = EphProv.GetEphes(tdate).Revised
+                    Dim tdate As Date = Date.Now.AddDays(-1 + i)
+                    Dim reqEphes As WikiEphe()
+                    Dim revised As Boolean
+                    Try
+                        reqEphes = EphProv.GetEphes(tdate).EfeDetails.ToArray()
+                        revised = EphProv.GetEphes(tdate).Revised
+                    Catch ex As IndexOutOfRangeException
+                        Continue For
+                    End Try
                     If revised Then
                         Dim tdatestring As String = tdate.Year.ToString & tdate.Month.ToString("00") & tdate.Day.ToString("00")
                         Try

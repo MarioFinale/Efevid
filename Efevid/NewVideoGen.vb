@@ -89,9 +89,11 @@ Public Class NewVideoGen
         efeinfotext &= Environment.NewLine & "Enlaces:"
 
         For Each ef As WikiEphe In Ephs
+            Dim t As String = "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
+            't = WorkerBot.GetShortenMetaWikiUrl(t)
             efeinfotext &= Environment.NewLine & "• "
             efeinfotext &= " " & ef.Page & ": "
-            efeinfotext &= "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
+            efeinfotext &= t
         Next
         efeinfotext = efeinfotext & Environment.NewLine & IO.File.ReadAllText(musicDescriptionFilePath, System.Text.Encoding.UTF8)
         efeinfotext = efeinfotext & btext
@@ -340,7 +342,7 @@ Public Class NewVideoGen
 
     Private Function AddLicensingToEphSvg(ByVal svgString As String, ByVal commonsName As String, commonsAuthor As String, commonsLicenseName As String, commonsLicenseURL As String) As String
         Dim currentFrameXmlContent As String = svgString
-        Dim shortenedImageUrl As String = WorkerBot.GetShortenMetaWikiUrl("https://commons.wikimedia.org/wiki/File:" & commonsName)
+        Dim shortenedImageUrl As String = "https : //commons.wikimedia.org/wiki/File:" & commonsName 'WorkerBot.GetShortenMetaWikiUrl("https://commons.wikimedia.org/wiki/File:" & commonsName)
         Dim imageCommonsName As String = "Imagen en Wikimedia Commons: " & shortenedImageUrl
         Dim imageCommonsAuthor As String = "Autor de la imagen: " & commonsAuthor
         Dim imageCommonsLicense As String = "Licencia: " & commonsLicenseName & " (" & commonsLicenseURL & ")"

@@ -164,8 +164,8 @@ Public Class EpheProvider
                     Dim vValue As String = s.Split("="c)(1).Trim
                     Dim vProperty As String = String.Empty
                     If var.Contains("."c) Then
-                        vProperty = var.Split("."c)(1).Trim
-                        var = var.Split("."c)(0).Trim
+                        vProperty = var.Split("."c).Last().Trim()
+                        var = Utils.ReplaceLast(var, vProperty, "").Trim()
                     End If
                     If Not Varlist.Keys.Contains(var) Then
                         Varlist.Add(var, New List(Of Tuple(Of String, String)))
