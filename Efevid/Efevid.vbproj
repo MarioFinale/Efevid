@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>Efevid</RootNamespace>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <ReferencePath>E:\Users\MarioFinale\Documents\GitHub\Efevid\Efevid\..\..\Comp\</ReferencePath>
     <AssemblyVersion>1.0.2202.42336</AssemblyVersion>
     <FileVersion>1.0.2202.42336</FileVersion>
@@ -19,14 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="Svg" Version="3.1.1" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
-    <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="MWBot.net">
-      <HintPath>..\..\Comp\netcoreapp3.1\MWBot.net.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +39,12 @@
 
   <ItemGroup>
     <Folder Include="bin\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MWBot.net">
+      <HintPath>..\..\Comp\net6.0\MWBot.net.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
