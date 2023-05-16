@@ -37,7 +37,7 @@ Module Main
                 Dim EphProv As New EpheProvider(workerBot)
                 workerBot.BotApiHandler.UserAgent = UserAgent
                 For i As Integer = 0 To 8
-                    Dim tdate As Date = Date.Now.AddDays(-1 + i)
+                    Dim tdate As Date = Date.Now.AddDays(i)
                     Dim reqEphes As WikiEphe()
                     Dim revised As Boolean
                     Try
@@ -136,11 +136,15 @@ Module Main
             SettingsProvider.NewVal("INTRO_LOGO", ResourcesDir & "wlogo.png")
         End If
 
-        Dim vidName As Boolean = SettingsProvider.Contains("VID_NAME")
-        If Not vidName Then
-            SettingsProvider.NewVal("VID_NAME", "Efemérides")
+        Dim vidName_1 As Boolean = SettingsProvider.Contains("VID_NAME_1")
+        If Not vidName_1 Then
+            SettingsProvider.NewVal("VID_NAME_1", "Efemérides del ")
         End If
 
+        Dim vidName_2 As Boolean = SettingsProvider.Contains("VID_NAME_1")
+        If Not vidName_1 Then
+            SettingsProvider.NewVal("VID_NAME_2", " en Wikipedia, la enciclopedia de contenido libre.")
+        End If
 
         statuspath = WorkerDir & "status.htm"
         triggerFile = WorkerDir & "efevid.runme"

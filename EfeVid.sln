@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29509.3
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Efevid", "Efevid\Efevid.vbproj", "{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Efevid", "Efevid\Efevid.vbproj", "{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}"
+EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "MWBot.net", "..\MWBot.net\MWBot.net\MWBot.net.vbproj", "{B4AAB9FF-16B3-4ED9-AE25-B6AB3978D9C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13B03E6F-4FA4-445E-BDDF-871ED2C04A77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4AAB9FF-16B3-4ED9-AE25-B6AB3978D9C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4AAB9FF-16B3-4ED9-AE25-B6AB3978D9C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4AAB9FF-16B3-4ED9-AE25-B6AB3978D9C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4AAB9FF-16B3-4ED9-AE25-B6AB3978D9C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

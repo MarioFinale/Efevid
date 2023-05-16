@@ -85,7 +85,7 @@ Public Class NewVideoGen
         Dim btext As String = IO.File.ReadAllText(bottomFilePath)
 
 
-        Dim efeinfotext As String = htext & CType(SettingsProvider.Get("VID_NAME"), String) & " " & Fecha & Environment.NewLine
+        Dim efeinfotext As String = htext & CType(SettingsProvider.Get("VID_NAME_1"), String) & Fecha & CType(SettingsProvider.Get("VID_NAME_2"), String) & Environment.NewLine
         efeinfotext &= Environment.NewLine & "Enlaces:"
 
         For Each ef As WikiEphe In Ephs
@@ -440,7 +440,7 @@ Public Class NewVideoGen
             End Try
         Next
         img.Dispose()
-        EventLogger.EX_Log("Problemas al obtener una imagen desde Commons", "PicFromUrl")
+        EventLogger.EX_Log("Problemas al obtener una imagen desde Commons. URL al recurso:" & url, "PicFromUrl")
         Throw New MWBot.net.MaxRetriesExeption
     End Function
 

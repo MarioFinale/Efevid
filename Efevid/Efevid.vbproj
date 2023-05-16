@@ -7,6 +7,8 @@
     <ReferencePath>E:\Users\MarioFinale\Documents\GitHub\Efevid\Efevid\..\..\Comp\</ReferencePath>
     <AssemblyVersion>1.0.2202.42336</AssemblyVersion>
     <FileVersion>1.0.2202.42336</FileVersion>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <ImportedNamespaces>Efevid.Ephe=False,Efevid.My=False,Efevid.My.Resources=False,MWBot.net=False,MWBot.net.Utility=False,MWBot.net.WikiBot=False,Microsoft.VisualBasic=True,System=True,System.Collections=True,System.Collections.Generic=True,System.Diagnostics=True,System.Linq=True,System.Xml.Linq=True,System.Threading.Tasks=True,Efevid=True</ImportedNamespaces>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -42,9 +44,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MWBot.net">
-      <HintPath>..\..\Comp\net6.0\MWBot.net.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\MWBot.net\MWBot.net\MWBot.net.vbproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Import Include="Efevid.Ephe" />
+    <Import Include="Efevid.My" />
+    <Import Include="Efevid.My.Resources" />
+    <Import Include="MWBot.net" />
+    <Import Include="MWBot.net.Utility" />
+    <Import Include="MWBot.net.WikiBot" />
   </ItemGroup>
 
 </Project>
