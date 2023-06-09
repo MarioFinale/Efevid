@@ -1,4 +1,5 @@
 ﻿Option Strict On
+Option Explicit On
 Imports System.Drawing
 Imports System.Drawing.Imaging
 Imports System.IO
@@ -143,11 +144,14 @@ Public Class NewVideoGen
     ''' </summary>
     ''' <param name="frames">Mínimo recomendado: 10 frames. Valores deben ser múltiplos de 10.</param>
     ''' <returns></returns>
-    Private Function GenerateIntro(ByVal frames As Integer) As Integer
-        Dim fadeInFrames As Integer = (frames \ 10) * 2
-        Dim staticIntroFrames As Integer = (frames \ 10) * 6
-        Dim fadeOutFrames As Integer = (frames \ 10) * 2
+    Private Function GenerateIntro(ByVal totalFrames As Integer) As Integer
+        Const fadeInDuration As Integer = 2
+        Const staticIntroDuration As Integer = 6
+        Const fadeOutDuration As Integer = 2
 
+        Dim fadeInFrames As Integer = (totalFrames \ 10) * fadeInDuration
+        Dim staticIntroFrames As Integer = (totalFrames \ 10) * staticIntroDuration
+        Dim fadeOutFrames As Integer = (totalFrames \ 10) * fadeOutDuration
 
         For currentFrame As Integer = 1 To fadeInFrames
             EffectiveFrames += 1
@@ -157,7 +161,6 @@ Public Class NewVideoGen
             currentFrameXmlContent = currentFrameXmlContent.Replace("fill-opacity=""0.000""", "fill-opacity=""" & opacity & """")
             currentFrameXmlContent = currentFrameXmlContent.Replace("XX de XXXXXX", EpheProvider.GetDateAsSpaString(CurrentDate))
             SvgTextImageFile(frameFileName, currentFrameXmlContent)
-
         Next
 
         For currentFrame As Integer = 1 To staticIntroFrames
@@ -177,134 +180,140 @@ Public Class NewVideoGen
             currentFrameXmlContent = currentFrameXmlContent.Replace("XX de XXXXXX", EpheProvider.GetDateAsSpaString(CurrentDate))
             SvgTextImageFile(frameFileName, currentFrameXmlContent)
         Next
+
         Return EffectiveFrames
     End Function
 
-    Private Function GenerateEphe(ByVal frames As Integer, eph As WikiEphe) As Integer
-        Dim fadeInFrames As Integer = (frames \ 10) * 2
-        Dim textFrames = (frames \ 10) * 2
-        Dim staticFrames As Integer = (frames \ 10) * 5
-        Dim fadeOutFrames As Integer = (frames \ 10)
+    Private Function GenerateEphe(ByVal totalFrames As Integer, eph As WikiEphe) As Integer
+        Const fadeInDuration As Integer = 2
+        Const textDuration As Integer = 2
+        Const staticDuration As Integer = 5
+        Const fadeOutDuration As Integer = 1
 
-        Dim ephBaseSvg As String = GenerateEPhBaseSvg(eph)
-        Dim ephLastSvg As String = ephBaseSvg
+        Dim fadeInFrames As Integer = (totalFrames \ 10) * fadeInDuration
+        Dim textFrames = (totalFrames \ 10) * textDuration
+        Dim staticFrames As Integer = (totalFrames \ 10) * staticDuration
+        Dim fadeOutFrames As Integer = (totalFrames \ 10) * fadeOutDuration
 
-        Dim fadein_pre As Integer = fadeInFrames \ 4
-        Dim fadein_img As Integer = fadeInFrames \ 2
-        Dim fadein_2 As Integer = fadeInFrames \ 4
+        Dim baseSvgCode As String = GenerateEPhBaseSvg(eph)
+        Dim lastSvgCode As String = baseSvgCode
 
+        Dim fadeInPreFrames As Integer = fadeInFrames \ 4
+        Dim fadeInImageFrames As Integer = fadeInFrames \ 2
+        Dim fadeIn2Frames As Integer = fadeInFrames \ 4
 
-        For i As Integer = 1 To fadein_pre
+        For i As Integer = 1 To fadeInPreFrames
             EffectiveFrames += 1
-            Dim currentFrameSVG As String = ephBaseSvg
-            Dim opacity As Double = LinealScaleToLog(fadein_pre, i)
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""00.000""", "fill-opacity=""" & opacity.ToString() & """")
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0""")
-            currentFrameSVG = currentFrameSVG.Replace("<svg x=""0"" y=""540px""", "<svg x=""1200px"" y=""540px""")
-            currentFrameSVG = Regex.Replace(currentFrameSVG, "<text x=""3[0-9]{2}px""", "<text x=""1200px""")
-            currentFrameSVG = currentFrameSVG.Replace("x=""10""", "x=""1200px""")
+            Dim currentFrameSvgCode As String = baseSvgCode
+            Dim opacity As Double = LinealScaleToLog(fadeInPreFrames, i)
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""00.000""", "fill-opacity=""" & opacity.ToString() & """")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""0.800""", "fill-opacity=""0""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("<svg x=""0"" y=""540px""", "<svg x=""1200px"" y=""540px""")
+            currentFrameSvgCode = Regex.Replace(currentFrameSvgCode, "<text x=""3[0-9]{2}px""", "<text x=""1200px""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("x=""10""", "x=""1200px""")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
-            ephLastSvg = currentFrameSVG
-            SvgTextImageFile(currentFrameFileName, currentFrameSVG)
+            lastSvgCode = currentFrameSvgCode
+            SvgTextImageFile(currentFrameFileName, currentFrameSvgCode)
         Next
 
-        For i As Integer = 1 To fadein_img
+        For i As Integer = 1 To fadeInImageFrames
             EffectiveFrames += 1
-            Dim currentFrameSVG As String = ephBaseSvg
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""00.000""", "fill-opacity=""0.000""")
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0.000000""")
-            currentFrameSVG = currentFrameSVG.Replace("<svg x=""0"" y=""540px""", "<svg x=""1200px"" y=""540px""")
-            currentFrameSVG = Regex.Replace(currentFrameSVG, "<text x=""3[0-9]{2}px""", "<text x=""1200px""")
-            currentFrameSVG = currentFrameSVG.Replace("x=""10""", "x=""1201px""")
+            Dim currentFrameSvgCode As String = baseSvgCode
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""00.000""", "fill-opacity=""0.000""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""0.800""", "fill-opacity=""0.000000""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("<svg x=""0"" y=""540px""", "<svg x=""1200px"" y=""540px""")
+            currentFrameSvgCode = Regex.Replace(currentFrameSvgCode, "<text x=""3[0-9]{2}px""", "<text x=""1200px""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("x=""10""", "x=""1201px""")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
-            ephLastSvg = currentFrameSVG
-            SvgTextImageFile(currentFrameFileName, currentFrameSVG)
+            lastSvgCode = currentFrameSvgCode
+            SvgTextImageFile(currentFrameFileName, currentFrameSvgCode)
         Next
 
-        For i As Integer = 1 To fadein_2
+        For i As Integer = 1 To fadeIn2Frames
             EffectiveFrames += 1
-            Dim x_coord_year As Double = LinealScaleToLog(fadein_2, i) * 600
-            Dim currentFrameSVG As String = ephLastSvg
-            Dim opacity As Double = 1 - LinealScaleToLog(fadein_2, i)
-            Dim bgopacity As Double = 1 - LinealScaleToLog(fadein_2, i)
-            Dim blackBarOpacity As Double = LinealScaleToLog(fadein_2, i)
-            If bgopacity > 0.45 Then
-                bgopacity = 0.45
+            Dim xCoordYear As Double = LinealScaleToLog(fadeIn2Frames, i) * 600
+            Dim currentFrameSvgCode As String = lastSvgCode
+            Dim opacity As Double = 1 - LinealScaleToLog(fadeIn2Frames, i)
+            Dim bgOpacity As Double = 1 - LinealScaleToLog(fadeIn2Frames, i)
+            Dim blackBarOpacity As Double = LinealScaleToLog(fadeIn2Frames, i)
+            If bgOpacity > 0.45 Then
+                bgOpacity = 0.45
             End If
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.000000""", "fill-opacity=""" & bgopacity & """")
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""00.000""", "fill-opacity=""" & blackBarOpacity.ToString() & """")
-            currentFrameSVG = currentFrameSVG.Replace("x=""1201px""", "x=""" & (x_coord_year + 10).ToString & """")
-            currentFrameSVG = currentFrameSVG.Replace("<svg x=""1200px"" y=""540px""", "<svg x=""0"" y=""540px""")
-            currentFrameSVG = currentFrameSVG.Replace("opacity=""1.0000""", "opacity=""" & opacity & """")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""0.000000""", "fill-opacity=""" & bgOpacity & """")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""00.000""", "fill-opacity=""" & blackBarOpacity.ToString() & """")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("x=""1201px""", "x=""" & (xCoordYear + 10).ToString & """")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("<svg x=""1200px"" y=""540px""", "<svg x=""0"" y=""540px""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("opacity=""1.0000""", "opacity=""" & opacity & """")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
-            SvgTextImageFile(currentFrameFileName, currentFrameSVG)
+            SvgTextImageFile(currentFrameFileName, currentFrameSvgCode)
         Next
 
         For i As Integer = 1 To textFrames
             EffectiveFrames += 1
-            Dim currentFrameSVG As String = ephBaseSvg
+            Dim currentFrameSvgCode As String = baseSvgCode
             Dim currX As Double = (LinealScaleToLog(textFrames, i) * -1200) + 300
 
             For f As Integer = 300 To 320
-                currentFrameSVG = currentFrameSVG.Replace("<text x=""" & f & "px""", "<text x=""" & currX & "px""")
+                currentFrameSvgCode = currentFrameSvgCode.Replace("<text x=""" & f & "px""", "<text x=""" & currX & "px""")
             Next
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
-            SvgTextImageFile(currentFrameFileName, currentFrameSVG)
+            SvgTextImageFile(currentFrameFileName, currentFrameSvgCode)
         Next
 
         For i As Integer = 1 To staticFrames
             EffectiveFrames += 1
-            Dim currentFrameSVG As String = ephBaseSvg
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
+            Dim currentFrameSvgCode As String = baseSvgCode
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
-            SvgTextImageFile(currentFrameFileName, currentFrameSVG)
+            SvgTextImageFile(currentFrameFileName, currentFrameSvgCode)
         Next
 
         For i As Integer = 1 To fadeOutFrames
             EffectiveFrames += 1
-            Dim currentFrameSVG As String = ephBaseSvg
+            Dim currentFrameSvgCode As String = baseSvgCode
             Dim opacity As Double = 1 - LinealScaleToLog(fadeOutFrames, i)
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
-            currentFrameSVG = currentFrameSVG.Replace("fill-opacity=""00.000""", "fill-opacity=""" & opacity.ToString() & """")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""0.800""", "fill-opacity=""0.45""")
+            currentFrameSvgCode = currentFrameSvgCode.Replace("fill-opacity=""00.000""", "fill-opacity=""" & opacity.ToString() & """")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
-            SvgTextImageFile(currentFrameFileName, currentFrameSVG)
+            SvgTextImageFile(currentFrameFileName, currentFrameSvgCode)
         Next
 
         Return EffectiveFrames
     End Function
 
-    Private Function GenerateOutro(ByVal frames As Integer) As Integer
-        Dim ephline As String = "<text x=""300px"" y=""SEPARATION"" text-anchor=""middle"" font-family=""Verdana"" font-size=""15"" fill=""#ebebf0"" lengthAdjust=""spacing"">TEXT_LINE</text>"
-        Dim fadein_frames As Integer = frames \ 2
+    Private Function GenerateOutro(ByVal totalFrames As Integer) As Integer
+        Const fadeInDuration As Integer = 2
 
+        Dim ephlineTemplate As String = "<text x=""300px"" y=""SEPARATION"" text-anchor=""middle"" font-family=""Verdana"" font-size=""15"" fill=""#ebebf0"" lengthAdjust=""spacing"">TEXT_LINE</text>"
+        Dim fadeInFrames As Integer = (totalFrames \ 2) * fadeInDuration
 
-        For i As Integer = 1 To fadein_frames
+        For i As Integer = 1 To fadeInFrames
             EffectiveFrames += 1
             Dim currentFrameXmlContent As String = OutroImageXmlContent
-            Dim opacity As Double = LinealScaleToLog(fadein_frames, i)
+            Dim opacity As Double = LinealScaleToLog(fadeInFrames, i)
             currentFrameXmlContent = currentFrameXmlContent.Replace("fill=""white"" fill-opacity=""0""", "fill=""white"" fill-opacity="" " & opacity.ToString() & """")
             Dim lines As String() = OutroText.Split(Environment.NewLine)
             For b As Integer = 0 To lines.Length - 1
-                Dim l As String = lines(b).Trim()
-                Dim currentline As String = ephline.Replace("TEXT_LINE", l)
-                currentline = currentline.Replace("SEPARATION", ((500 / lines.Length) * (b + 1)).ToString)
-                currentFrameXmlContent = currentFrameXmlContent.Replace("<!--TEXT_LINE-->", currentline & Environment.NewLine & "<!--TEXT_LINE-->")
+                Dim line As String = lines(b).Trim()
+                Dim ephline As String = ephlineTemplate.Replace("TEXT_LINE", line)
+                ephline = ephline.Replace("SEPARATION", ((500 / lines.Length) * (b + 1)).ToString)
+                currentFrameXmlContent = currentFrameXmlContent.Replace("<!--TEXT_LINE-->", ephline & Environment.NewLine & "<!--TEXT_LINE-->")
             Next
             currentFrameXmlContent = currentFrameXmlContent.Replace("<!--TEXT_LINE-->", "")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
             SvgTextImageFile(currentFrameFileName, currentFrameXmlContent)
         Next
 
-        For fr As Integer = 1 To fadein_frames
+        For i As Integer = 1 To fadeInFrames
             EffectiveFrames += 1
             Dim currentFrameXmlContent As String = OutroImageXmlContent
             Dim lines As String() = OutroText.Split(Environment.NewLine)
             For b As Integer = 0 To lines.Length - 1
-                Dim l As String = lines(b).Trim()
-                Dim currentline As String = ephline.Replace("TEXT_LINE", l)
-                currentline = currentline.Replace("SEPARATION", ((500 / lines.Length) * (b + 1)).ToString)
-                currentFrameXmlContent = currentFrameXmlContent.Replace("<!--TEXT_LINE-->", currentline & Environment.NewLine & "<!--TEXT_LINE-->")
+                Dim line As String = lines(b).Trim()
+                Dim ephline As String = ephlineTemplate.Replace("TEXT_LINE", line)
+                ephline = ephline.Replace("SEPARATION", ((500 / lines.Length) * (b + 1)).ToString)
+                currentFrameXmlContent = currentFrameXmlContent.Replace("<!--TEXT_LINE-->", ephline & Environment.NewLine & "<!--TEXT_LINE-->")
             Next
             currentFrameXmlContent = currentFrameXmlContent.Replace("<!--TEXT_LINE-->", "")
             Dim currentFrameFileName As String = OutputDirectory & "ef_" & EffectiveFrames.ToString("0000") & ".svg"
