@@ -1,9 +1,6 @@
 ﻿Option Strict On
 Imports System.Globalization
 Imports System.Text.RegularExpressions
-Imports Efevid.Ephe
-Imports MWBot.net.WikiBot
-Imports MWBot.net.Utility
 Imports MWBot.net.Utility.Utils
 
 Public Class EpheProvider

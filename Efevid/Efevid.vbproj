@@ -3,11 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>Efevid</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ReferencePath>E:\Users\MarioFinale\Documents\GitHub\Efevid\Efevid\..\..\Comp\</ReferencePath>
     <AssemblyVersion>1.0.2202.42336</AssemblyVersion>
     <FileVersion>1.0.2202.42336</FileVersion>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks></TargetFrameworks>
     <ImportedNamespaces>Efevid.Ephe=False,Efevid.My=False,Efevid.My.Resources=False,MWBot.net=False,MWBot.net.Utility=False,MWBot.net.WikiBot=False,Microsoft.VisualBasic=True,System=True,System.Collections=True,System.Collections.Generic=True,System.Diagnostics=True,System.Linq=True,System.Xml.Linq=True,System.Threading.Tasks=True,Efevid=True</ImportedNamespaces>
   </PropertyGroup>
 
