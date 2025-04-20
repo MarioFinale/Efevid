@@ -90,15 +90,16 @@ Public Class NewVideoGen
 
 
         Dim efeinfotext As String = htext & CType(SettingsProvider.Get("VID_NAME_1"), String) & Fecha & CType(SettingsProvider.Get("VID_NAME_2"), String) & Environment.NewLine
-        efeinfotext &= Environment.NewLine & "Enlaces:"
 
-        For Each ef As WikiEphe In Ephs
-            Dim t As String = "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
-            't = WorkerBot.GetShortenMetaWikiUrl(t) 'GetShortenMetaWikiUrl requires permissions on meta
-            efeinfotext &= Environment.NewLine & "• "
-            efeinfotext &= " " & ef.Page & ": "
-            efeinfotext &= t
-        Next
+        'efeinfotext &= Environment.NewLine & "Enlaces:"
+
+        'For Each ef As WikiEphe In Ephs
+        '    Dim t As String = "http://es.wikipedia.org/wiki/" & UrlWebEncode(ef.Page.Replace(" "c, "_"c))
+        '    t = WorkerBot.GetShortenMetaWikiUrl(t) 'GetShortenMetaWikiUrl requires permissions on meta
+        '    efeinfotext &= Environment.NewLine & "• "
+        '    efeinfotext &= " " & ef.Page & ": "
+        '    efeinfotext &= t
+        'Next
         efeinfotext = efeinfotext & Environment.NewLine & IO.File.ReadAllText(musicDescriptionFilePath, System.Text.Encoding.UTF8)
         efeinfotext = efeinfotext & btext
         IO.File.WriteAllText(descriptionHtmlFilePath, efeinfotext)
